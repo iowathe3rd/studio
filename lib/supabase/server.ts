@@ -18,7 +18,7 @@ function requireEnv(
 }
 
 export function createSupabaseServerClient(): SupabaseClient<Database> {
-  const cookieStore = cookies();
+  const cookieStore = cookies() as unknown as Awaited<ReturnType<typeof cookies>>;
 
   return createServerClient<Database>(
     requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
