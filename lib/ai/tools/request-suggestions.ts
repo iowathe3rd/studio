@@ -1,10 +1,15 @@
-import { streamObject, tool, type UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
-import { z } from "zod";
 import { getDocumentById, saveSuggestions } from "@/lib/db/queries";
 import type { Suggestion } from "@/lib/supabase/models";
 import type { ChatMessage } from "@/lib/types";
 import { generateUUID } from "@/lib/utils";
+import type { Session } from "@supabase/supabase-js";
+import {
+  type LanguageModel,
+  streamObject,
+  tool,
+  type UIMessageStreamWriter,
+} from "ai";
+import { z } from "zod";
 import { myProvider } from "../providers";
 
 type RequestSuggestionsProps = {
@@ -12,14 +17,16 @@ type RequestSuggestionsProps = {
   dataStream: UIMessageStreamWriter<ChatMessage>;
 };
 
-type SuggestionDraft = Omit<
-  Suggestion,
-  "userId" | "createdAt" | "documentCreatedAt"
-> & {
-  userId?: string;
-  createdAt?: string | Date;
-  documentCreatedAt?: string | Date;
-};
+type SuggestionDraft =
+  & Omit<
+    Suggestion,
+    "userId" | "createdAt" | "documentCreatedAt"
+  >
+  & {
+    userId?: string;
+    createdAt?: string | Date;
+    documentCreatedAt?: string | Date;
+  };
 
 export const requestSuggestions = ({
   session,
@@ -42,9 +49,10 @@ export const requestSuggestions = ({
       }
 
       const suggestions: SuggestionDraft[] = [];
+      const model = myProvider.languageModel("artifact-model") as LanguageModel;
 
       const { elementStream } = streamObject({
-        model: myProvider.languageModel("artifact-model"),
+        model,
         system:
           "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.",
         prompt: document.content,

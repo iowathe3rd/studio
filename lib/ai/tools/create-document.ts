@@ -1,12 +1,12 @@
-import { tool, type UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
-import { z } from "zod";
 import {
   artifactKinds,
   documentHandlersByArtifactKind,
 } from "@/lib/artifacts/server";
 import type { ChatMessage } from "@/lib/types";
 import { generateUUID } from "@/lib/utils";
+import type { Session } from "@supabase/supabase-js";
+import { tool, type UIMessageStreamWriter } from "ai";
+import { z } from "zod";
 
 type CreateDocumentProps = {
   session: Session;
@@ -50,7 +50,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
 
       const documentHandler = documentHandlersByArtifactKind.find(
         (documentHandlerByArtifactKind) =>
-          documentHandlerByArtifactKind.kind === kind
+          documentHandlerByArtifactKind.kind === kind,
       );
 
       if (!documentHandler) {

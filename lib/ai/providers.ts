@@ -32,12 +32,20 @@ type ModelId = keyof typeof MODEL_REGISTRY;
 const DEFAULT_PROVIDER: ProviderId =
   process.env.AI_DEFAULT_PROVIDER === "gemini" ? "gemini" : "openai";
 
-function assertEnv(key: "OPENAI_API_KEY" | "GEMINI_API_KEY") {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`${key} is not defined`);
+function getOpenAIApiKey() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not defined");
   }
-  return value;
+  return apiKey;
+}
+
+function getGeminiApiKey() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY is not defined");
+  }
+  return apiKey;
 }
 
 type OpenAIProviderInstance = ReturnType<typeof createOpenAI>;
@@ -51,7 +59,7 @@ let testProviderSingleton: TestProviderInstance | undefined;
 function getOpenAIProvider() {
   if (!openaiProviderSingleton) {
     openaiProviderSingleton = createOpenAI({
-      apiKey: assertEnv("OPENAI_API_KEY"),
+      apiKey: getOpenAIApiKey(),
     });
   }
   return openaiProviderSingleton;
@@ -60,7 +68,7 @@ function getOpenAIProvider() {
 function getGeminiProvider() {
   if (!geminiProviderSingleton) {
     geminiProviderSingleton = createGoogleGenerativeAI({
-      apiKey: assertEnv("GEMINI_API_KEY"),
+      apiKey: getGeminiApiKey(),
     });
   }
   return geminiProviderSingleton;
