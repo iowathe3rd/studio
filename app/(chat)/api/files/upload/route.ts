@@ -1,26 +1,44 @@
-import { put } from "@vercel/blob";
+import "server-only";
+
+import { Buffer } from "node:buffer";
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-// Use Blob instead of File since File is not available in Node.js environment
+export const runtime = "nodejs";
+
+const BUCKET_ID = "uploads";
+
 const FileSchema = z.object({
   file: z
     .instanceof(Blob)
     .refine((file) => file.size <= 5 * 1024 * 1024, {
       message: "File size should be less than 5MB",
     })
-    // Update the file type based on the kind of files you want to accept
     .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
       message: "File type should be JPEG or PNG",
     }),
 });
 
+function sanitizeFilename(originalName: string) {
+  const name = originalName.trim().toLowerCase();
+  const replaced = name.replace(/[^a-z0-9.\-_]/g, "-");
+  return replaced.replace(/-+/g, "-").replace(/(^-|-$)/g, "") || "file";
+}
+
+function buildStoragePath(userId: string, originalName: string) {
+  const sanitized = sanitizeFilename(originalName);
+  return `uploads/${userId}/${Date.now()}-${randomUUID()}-${sanitized}`;
+}
+
 export async function POST(request: Request) {
   const session = await auth();
 
-  if (!session) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -30,7 +48,7 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as Blob;
+    const file = formData.get("file") as Blob | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -46,20 +64,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    // Get filename from formData since Blob doesn't have name property
-    const filename = (formData.get("file") as File).name;
-    const fileBuffer = await file.arrayBuffer();
+    const filename = (formData.get("file") as File)?.name ?? "file";
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const storagePath = buildStoragePath(session.user.id, filename);
 
-    try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
+    const supabase = await createSupabaseServerClient();
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(BUCKET_ID)
+      .upload(storagePath, fileBuffer, {
+        contentType: file.type,
+        upsert: false,
       });
 
-      return NextResponse.json(data);
-    } catch (_error) {
+    if (uploadError || !uploadData) {
+      console.error("Supabase storage upload failed", uploadError);
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
-  } catch (_error) {
+
+    const admin = createSupabaseAdminClient();
+    const { data: signed, error: signedError } = await admin.storage
+      .from(BUCKET_ID)
+      .createSignedUrl(uploadData.path, 60 * 60);
+
+    if (signedError || !signed?.signedUrl) {
+      console.error("Failed to create signed URL", signedError);
+      return NextResponse.json(
+        { error: "Failed to generate access URL" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      url: signed.signedUrl,
+      storagePath: uploadData.path,
+      contentType: file.type,
+      name: filename,
+    });
+  } catch (error) {
+    console.error("Failed to process upload", error);
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 }
