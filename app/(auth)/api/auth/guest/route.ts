@@ -1,21 +1,39 @@
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { signIn } from "@/app/(auth)/auth";
-import { isDevelopmentEnvironment } from "@/lib/constants";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const redirectUrl = searchParams.get("redirectUrl") || "/";
+  const requestUrl = new URL(request.url);
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET,
-    secureCookie: !isDevelopmentEnvironment,
-  });
+  // Create Supabase client using the existing helper
+  const supabase = await createSupabaseServerClient();
 
-  if (token) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Check if user is already signed in
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session) {
+    return NextResponse.redirect(new URL(redirectUrl, requestUrl.origin));
   }
 
-  return signIn("guest", { redirect: true, redirectTo: redirectUrl });
+  // Sign in anonymously using Supabase's native anonymous auth
+  const { data, error } = await supabase.auth.signInAnonymously();
+
+  if (error) {
+    console.error("Failed to sign in anonymously:", error);
+    return NextResponse.json(
+      { error: "Failed to sign in as guest" },
+      { status: 500 },
+    );
+  }
+
+  if (!data.session) {
+    return NextResponse.json(
+      { error: "No session created" },
+      { status: 500 },
+    );
+  }
+
+  // Redirect to the desired page
+  return NextResponse.redirect(new URL(redirectUrl, requestUrl.origin));
 }
