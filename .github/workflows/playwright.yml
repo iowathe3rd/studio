@@ -10,10 +10,21 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     env:
-      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+      # Supabase Configuration
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      
+      # AI Provider Configuration
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      AI_DEFAULT_PROVIDER: ${{ secrets.AI_DEFAULT_PROVIDER }}
+      
+      # Optional: Redis for resumable streams
       REDIS_URL: ${{ secrets.REDIS_URL }}
+      
+      # Optional: Vercel Blob storage
+      BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
