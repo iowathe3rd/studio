@@ -11,21 +11,11 @@ export type DBMessageInsert = Tables["Message_v2"]["Insert"];
 export type DBMessageUpdate = Tables["Message_v2"]["Update"];
 export type Vote = Tables["Vote_v2"]["Row"];
 export type VoteInsert = Tables["Vote_v2"]["Insert"];
-type DocumentTable = Tables["Document"];
-
 export type DocumentKind = "text" | "code" | "image" | "sheet";
 
-export type Document = Omit<DocumentTable["Row"], "text"> & {
-  kind: DocumentKind;
-};
-
-export type DocumentInsert = Omit<DocumentTable["Insert"], "text"> & {
-  kind: DocumentKind;
-};
-
-export type DocumentUpdate = Omit<DocumentTable["Update"], "text"> & {
-  kind?: DocumentKind;
-};
+export type Document = Tables["Document"]["Row"];
+export type DocumentInsert = Tables["Document"]["Insert"];
+export type DocumentUpdate = Tables["Document"]["Update"];
 export type Suggestion = Tables["Suggestion"]["Row"];
 export type SuggestionInsert = Tables["Suggestion"]["Insert"];
 export type Stream = Tables["Stream"]["Row"];

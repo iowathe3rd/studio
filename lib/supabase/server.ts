@@ -7,14 +7,18 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type { Database } from "./types";
 
-function requireEnv(
-  name: "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-) {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} is not defined`);
+function getSupabaseEnvVars() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+      "Missing Supabase environment variables. " +
+        "Make sure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
+    );
   }
-  return value;
+
+  return { supabaseUrl, supabaseAnonKey };
 }
 
 type MutableCookies = {
@@ -31,10 +35,11 @@ export async function createSupabaseServerClient(): Promise<
 > {
   const cookieStore = await cookies();
   const mutableCookies = cookieStore as unknown as MutableCookies;
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseEnvVars();
 
   return createServerClient<Database>(
-    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -52,9 +57,10 @@ export async function createSupabaseServerClient(): Promise<
 
 export function createSupabaseMiddlewareResponse(request: NextRequest) {
   const response = NextResponse.next();
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseEnvVars();
   const supabase = createServerClient<Database>(
-    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -70,4 +76,42 @@ export function createSupabaseMiddlewareResponse(request: NextRequest) {
   );
 
   return { supabase, response };
+}
+
+/**
+ * Get the current user session from Supabase Auth
+ * Returns null if no session exists
+ */
+export async function getSession() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
+
+  if (error) {
+    console.error("Failed to get session:", error);
+    return null;
+  }
+
+  return session;
+}
+
+/**
+ * Get the current authenticated user from Supabase Auth
+ * Returns null if not authenticated
+ */
+export async function getUser() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error) {
+    console.error("Failed to get user:", error);
+    return null;
+  }
+
+  return user;
 }

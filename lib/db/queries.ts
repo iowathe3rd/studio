@@ -1,21 +1,18 @@
 import "server-only";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ArtifactKind } from "@/components/artifact";
 import type { VisibilityType } from "@/components/visibility-selector";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   type Chat,
   type DBMessage,
   type DBMessageInsert,
-  type Document,
-  type Suggestion,
   type SuggestionInsert,
   type User,
-  type Vote,
 } from "@/lib/supabase/models";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database, Json } from "@/lib/supabase/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { ChatSDKError } from "../errors";
 import type { AppUsage } from "../usage";
 import { generateUUID } from "../utils";
@@ -34,14 +31,16 @@ function toIsoString(value: Date | string) {
   return value instanceof Date ? value.toISOString() : value;
 }
 
-type MessageInsertInput = Omit<
-  DBMessageInsert,
-  "createdAt" | "parts" | "attachments"
-> & {
-  createdAt: Date | string;
-  parts: unknown;
-  attachments: unknown;
-};
+type MessageInsertInput =
+  & Omit<
+    DBMessageInsert,
+    "createdAt" | "parts" | "attachments"
+  >
+  & {
+    createdAt: Date | string;
+    parts: unknown;
+    attachments: unknown;
+  };
 
 function normalizeJson(value: unknown): Json {
   if (value === undefined || value === null) {
@@ -67,9 +66,11 @@ function normalizeJson(value: unknown): Json {
   if (typeof value === "object") {
     const result: Record<string, Json | undefined> = {};
 
-    for (const [key, val] of Object.entries(
-      value as Record<string, unknown>
-    )) {
+    for (
+      const [key, val] of Object.entries(
+        value as Record<string, unknown>,
+      )
+    ) {
       result[key] = normalizeJson(val);
     }
 
@@ -79,16 +80,18 @@ function normalizeJson(value: unknown): Json {
   return String(value) as Json;
 }
 
-type SuggestionInsertInput = Omit<
-  SuggestionInsert,
-  "createdAt" | "documentCreatedAt"
-> & {
-  createdAt: Date | string;
-  documentCreatedAt: Date | string;
-};
+type SuggestionInsertInput =
+  & Omit<
+    SuggestionInsert,
+    "createdAt" | "documentCreatedAt"
+  >
+  & {
+    createdAt: Date | string;
+    documentCreatedAt: Date | string;
+  };
 
 async function withSignedAttachmentUrls(
-  messages: DBMessage[]
+  messages: DBMessage[],
 ): Promise<DBMessage[]> {
   if (messages.length === 0) {
     return messages;
@@ -99,7 +102,7 @@ async function withSignedAttachmentUrls(
   const clonedMessages = messages.map((message) => {
     if (Array.isArray(message.parts)) {
       const partsClone = JSON.parse(
-        JSON.stringify(message.parts)
+        JSON.stringify(message.parts),
       ) as Array<Record<string, unknown>>;
 
       return {
@@ -136,7 +139,7 @@ async function withSignedAttachmentUrls(
             path: part.storagePath,
           });
         }
-      }
+      },
     );
   });
 
@@ -148,13 +151,13 @@ async function withSignedAttachmentUrls(
     .from(STORAGE_BUCKET_ID)
     .createSignedUrls(
       fileReferences.map((reference) => reference.path),
-      SIGNED_URL_TTL_SECONDS
+      SIGNED_URL_TTL_SECONDS,
     );
 
   if (error || !data) {
     console.error(
       "Failed to create signed URLs for message attachments",
-      error
+      error,
     );
     return clonedMessages;
   }
@@ -190,7 +193,7 @@ export async function getUser(email: string): Promise<User[]> {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get user by email"
+      "Failed to get user by email",
     );
   }
 
@@ -223,7 +226,7 @@ export async function createGuestUser() {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to create guest user"
+      "Failed to create guest user",
     );
   }
 
@@ -267,7 +270,7 @@ export async function deleteChatById({ id }: { id: string }) {
   if (voteError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete chat by id"
+      "Failed to delete chat by id",
     );
   }
 
@@ -279,7 +282,7 @@ export async function deleteChatById({ id }: { id: string }) {
   if (messageError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete chat by id"
+      "Failed to delete chat by id",
     );
   }
 
@@ -291,7 +294,7 @@ export async function deleteChatById({ id }: { id: string }) {
   if (streamError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete chat by id"
+      "Failed to delete chat by id",
     );
   }
 
@@ -305,7 +308,7 @@ export async function deleteChatById({ id }: { id: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete chat by id"
+      "Failed to delete chat by id",
     );
   }
 
@@ -323,7 +326,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   if (chatsError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete all chats by user id"
+      "Failed to delete all chats by user id",
     );
   }
 
@@ -341,7 +344,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   if (voteError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete all chats by user id"
+      "Failed to delete all chats by user id",
     );
   }
 
@@ -353,7 +356,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   if (messageError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete all chats by user id"
+      "Failed to delete all chats by user id",
     );
   }
 
@@ -365,7 +368,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   if (streamError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete all chats by user id"
+      "Failed to delete all chats by user id",
     );
   }
 
@@ -378,7 +381,7 @@ export async function deleteAllChatsByUserId({ userId }: { userId: string }) {
   if (deleteError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete all chats by user id"
+      "Failed to delete all chats by user id",
     );
   }
 
@@ -419,14 +422,14 @@ export async function getChatsByUserId({
     if (selectedChatError) {
       throw new ChatSDKError(
         "bad_request:database",
-        "Failed to get chats by user id"
+        "Failed to get chats by user id",
       );
     }
 
     if (!selectedChat) {
       throw new ChatSDKError(
         "not_found:database",
-        `Chat with id ${startingAfter} not found`
+        `Chat with id ${startingAfter} not found`,
       );
     }
 
@@ -441,14 +444,14 @@ export async function getChatsByUserId({
     if (selectedChatError) {
       throw new ChatSDKError(
         "bad_request:database",
-        "Failed to get chats by user id"
+        "Failed to get chats by user id",
       );
     }
 
     if (!selectedChat) {
       throw new ChatSDKError(
         "not_found:database",
-        `Chat with id ${endingBefore} not found`
+        `Chat with id ${endingBefore} not found`,
       );
     }
 
@@ -460,7 +463,7 @@ export async function getChatsByUserId({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get chats by user id"
+      "Failed to get chats by user id",
     );
   }
 
@@ -501,7 +504,7 @@ export async function saveMessages({
     role: message.role,
     parts: normalizeJson(message.parts) as DBMessageInsert["parts"],
     attachments: normalizeJson(
-      message.attachments
+      message.attachments,
     ) as DBMessageInsert["attachments"],
     createdAt: toIsoString(message.createdAt),
   }));
@@ -525,7 +528,7 @@ export async function getMessagesByChatId({ id }: { id: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get messages by chat id"
+      "Failed to get messages by chat id",
     );
   }
 
@@ -565,7 +568,7 @@ export async function voteMessage({
     if (error) {
       throw new ChatSDKError(
         "bad_request:database",
-        "Failed to vote message"
+        "Failed to vote message",
       );
     }
 
@@ -592,7 +595,7 @@ export async function getVotesByChatId({ id }: { id: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get votes by chat id"
+      "Failed to get votes by chat id",
     );
   }
 
@@ -645,7 +648,7 @@ export async function getDocumentsById({ id }: { id: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get documents by id"
+      "Failed to get documents by id",
     );
   }
 
@@ -665,7 +668,7 @@ export async function getDocumentById({ id }: { id: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get document by id"
+      "Failed to get document by id",
     );
   }
 
@@ -691,7 +694,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
   if (suggestionError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete documents by id after timestamp"
+      "Failed to delete documents by id after timestamp",
     );
   }
 
@@ -705,7 +708,7 @@ export async function deleteDocumentsByIdAfterTimestamp({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete documents by id after timestamp"
+      "Failed to delete documents by id after timestamp",
     );
   }
 
@@ -729,7 +732,7 @@ export async function saveSuggestions({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to save suggestions"
+      "Failed to save suggestions",
     );
   }
 }
@@ -749,7 +752,7 @@ export async function getSuggestionsByDocumentId({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get suggestions by document id"
+      "Failed to get suggestions by document id",
     );
   }
 
@@ -767,7 +770,7 @@ export async function getMessageById({ id }: { id: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get message by id"
+      "Failed to get message by id",
     );
   }
 
@@ -793,7 +796,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete messages by chat id after timestamp"
+      "Failed to delete messages by chat id after timestamp",
     );
   }
 
@@ -812,7 +815,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   if (voteError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete messages by chat id after timestamp"
+      "Failed to delete messages by chat id after timestamp",
     );
   }
 
@@ -825,7 +828,7 @@ export async function deleteMessagesByChatIdAfterTimestamp({
   if (deleteError) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to delete messages by chat id after timestamp"
+      "Failed to delete messages by chat id after timestamp",
     );
   }
 }
@@ -847,7 +850,7 @@ export async function updateChatVisibilityById({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to update chat visibility by id"
+      "Failed to update chat visibility by id",
     );
   }
 }
@@ -885,7 +888,7 @@ export async function getMessageCountByUserId({
 }) {
   const supabase = await getSupabase();
   const startTime = new Date(
-    Date.now() - differenceInHours * 60 * 60 * 1000
+    Date.now() - differenceInHours * 60 * 60 * 1000,
   ).toISOString();
 
   const { data, error } = await supabase.rpc("get_message_stats", {
@@ -896,7 +899,7 @@ export async function getMessageCountByUserId({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get message count by user id"
+      "Failed to get message count by user id",
     );
   }
 
@@ -919,7 +922,7 @@ export async function createStreamId({
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to create stream id"
+      "Failed to create stream id",
     );
   }
 }
@@ -936,7 +939,7 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   if (error) {
     throw new ChatSDKError(
       "bad_request:database",
-      "Failed to get stream ids by chat id"
+      "Failed to get stream ids by chat id",
     );
   }
 

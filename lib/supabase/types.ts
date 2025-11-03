@@ -74,7 +74,7 @@ export type Database = {
           content: string | null;
           createdAt: string;
           id: string;
-          text: string;
+          kind: "text" | "code" | "image" | "sheet";
           title: string;
           userId: string;
         };
@@ -82,7 +82,7 @@ export type Database = {
           content?: string | null;
           createdAt: string;
           id?: string;
-          text?: string;
+          kind?: "text" | "code" | "image" | "sheet";
           title: string;
           userId: string;
         };
@@ -90,7 +90,7 @@ export type Database = {
           content?: string | null;
           createdAt?: string;
           id?: string;
-          text?: string;
+          kind?: "text" | "code" | "image" | "sheet";
           title?: string;
           userId?: string;
         };
@@ -337,7 +337,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_message_stats: {
+        Args: { start_time: string; user_id: string };
+        Returns: number;
+      };
     };
     Enums: {
       [_ in never]: never;

@@ -5,27 +5,33 @@ import type { Database } from "./types";
 
 let client: SupabaseClient<Database> | undefined;
 
-function requireEnv(
-  name: "NEXT_PUBLIC_SUPABASE_URL" | "SUPABASE_SERVICE_ROLE_KEY"
-) {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} is not defined`);
+function getSupabaseAdminEnvVars() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error(
+      "Missing Supabase admin environment variables. " +
+        "Make sure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.",
+    );
   }
-  return value;
+
+  return { supabaseUrl, serviceRoleKey };
 }
 
 export function createSupabaseAdminClient(): SupabaseClient<Database> {
   if (!client) {
+    const { supabaseUrl, serviceRoleKey } = getSupabaseAdminEnvVars();
+
     client = createClient<Database>(
-      requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      supabaseUrl,
+      serviceRoleKey,
       {
         auth: {
           autoRefreshToken: false,
           persistSession: false,
         },
-      }
+      },
     );
   }
 

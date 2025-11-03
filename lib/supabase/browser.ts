@@ -4,20 +4,20 @@ import type { Database } from "./types";
 
 let client: SupabaseClient<Database> | undefined;
 
-function requireEnv(name: "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_ANON_KEY") {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} is not defined`);
-  }
-  return value;
-}
-
 export function createSupabaseBrowserClient() {
   if (!client) {
-    client = createBrowserClient<Database>(
-      requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-      requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-    );
+    // Must use direct process.env access for NEXT_PUBLIC_ vars to be inlined at build time
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error(
+        "Missing Supabase environment variables. " +
+          "Make sure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
+      );
+    }
+
+    client = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
   }
 
   return client;
