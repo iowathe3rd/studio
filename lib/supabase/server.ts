@@ -1,16 +1,15 @@
 import "server-only";
 
-import { cookies, headers } from "next/headers";
-import {
-  createServerClient,
-  createMiddlewareClient,
-  type CookieOptions,
-} from "@supabase/ssr";
-import type { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-function resolveEnvVar(name: string) {
+function requireEnv(
+  name: "NEXT_PUBLIC_SUPABASE_URL" | "NEXT_PUBLIC_SUPABASE_ANON_KEY"
+) {
   const value = process.env[name];
   if (!value) {
     throw new Error(`${name} is not defined`);
@@ -18,41 +17,51 @@ function resolveEnvVar(name: string) {
   return value;
 }
 
-export function getSupabaseServerClient(): SupabaseClient<Database> {
+export function createSupabaseServerClient(): SupabaseClient<Database> {
   const cookieStore = cookies();
-  const url = resolveEnvVar("NEXT_PUBLIC_SUPABASE_URL");
-  const anonKey = resolveEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
-  return createServerClient<Database>(url, anonKey, {
-    cookies: {
-      get(name) {
-        return cookieStore.get(name)?.value;
+  return createServerClient<Database>(
+    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach((cookie) => {
+            (cookieStore as unknown as {
+              set: (cookie: {
+                name: string;
+                value: string;
+                options?: CookieOptions;
+              }) => void;
+            }).set(cookie);
+          });
+        },
       },
-      set(name, value, options) {
-        cookieStore.set({ name, value, ...(options as CookieOptions | undefined) });
-      },
-      remove(name, options) {
-        cookieStore.delete({ name, ...(options as CookieOptions | undefined) });
-      },
-    },
-    headers,
-  });
+    }
+  );
 }
 
-export function getSupabaseMiddlewareClient({
-  request,
-  response,
-}: {
-  request: NextRequest;
-  response: NextResponse;
-}) {
-  const url = resolveEnvVar("NEXT_PUBLIC_SUPABASE_URL");
-  const anonKey = resolveEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+export function createSupabaseMiddlewareResponse(request: NextRequest) {
+  const response = NextResponse.next();
+  const supabase = createServerClient<Database>(
+    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach((cookie) => {
+            response.cookies.set(cookie);
+          });
+        },
+      },
+    }
+  );
 
-  return createMiddlewareClient<Database>({
-    req: request,
-    res: response,
-    supabaseUrl: url,
-    supabaseKey: anonKey,
-  });
+  return { supabase, response };
 }
