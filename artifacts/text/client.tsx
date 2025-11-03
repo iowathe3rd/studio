@@ -11,12 +11,24 @@ import {
   UndoIcon,
 } from "@/components/icons";
 import { Editor } from "@/components/text-editor";
-import type { Suggestion } from "@/lib/db/schema";
+import type { Suggestion } from "@/lib/supabase/models";
 import { getSuggestions } from "../actions";
 
 type TextArtifactMetadata = {
   suggestions: Suggestion[];
 };
+
+function normalizeTimestamp(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return new Date().toISOString();
+}
 
 export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   kind: "text",
@@ -31,8 +43,31 @@ export const textArtifact = new Artifact<"text", TextArtifactMetadata>({
   onStreamPart: ({ streamPart, setMetadata, setArtifact }) => {
     if (streamPart.type === "data-suggestion") {
       setMetadata((metadata) => {
+        const incoming = streamPart.data as Partial<Suggestion> & {
+          id: string;
+          documentId: string;
+          originalText: string;
+          suggestedText: string;
+          isResolved: boolean;
+          createdAt?: string | Date;
+          documentCreatedAt?: string | Date;
+          userId?: string;
+        };
+
+        const normalizedSuggestion: Suggestion = {
+          id: incoming.id,
+          documentId: incoming.documentId,
+          originalText: incoming.originalText,
+          suggestedText: incoming.suggestedText,
+          description: incoming.description ?? null,
+          isResolved: incoming.isResolved ?? false,
+          userId: incoming.userId ?? "",
+          createdAt: normalizeTimestamp(incoming.createdAt),
+          documentCreatedAt: normalizeTimestamp(incoming.documentCreatedAt),
+        };
+
         return {
-          suggestions: [...metadata.suggestions, streamPart.data],
+          suggestions: [...metadata.suggestions, normalizedSuggestion],
         };
       });
     }
