@@ -18,7 +18,14 @@ function requireEnv(
 }
 
 export function createSupabaseServerClient(): SupabaseClient<Database> {
-  const cookieStore = cookies() as unknown as Awaited<ReturnType<typeof cookies>>;
+  const cookieStoreAny = cookies() as any;
+  const mutableCookies = cookieStoreAny as {
+    set: (cookie: {
+      name: string;
+      value: string;
+      options?: CookieOptions;
+    }) => void;
+  };
 
   return createServerClient<Database>(
     requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
@@ -26,17 +33,11 @@ export function createSupabaseServerClient(): SupabaseClient<Database> {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll();
+          return cookieStoreAny.getAll();
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach((cookie) => {
-            (cookieStore as unknown as {
-              set: (cookie: {
-                name: string;
-                value: string;
-                options?: CookieOptions;
-              }) => void;
-            }).set(cookie);
+            mutableCookies.set(cookie);
           });
         },
       },
