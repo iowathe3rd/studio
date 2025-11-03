@@ -1,9 +1,9 @@
-import type { UIMessageStreamWriter } from "ai";
-import type { Session } from "next-auth";
 import { codeDocumentHandler } from "@/artifacts/code/server";
 import { sheetDocumentHandler } from "@/artifacts/sheet/server";
 import { textDocumentHandler } from "@/artifacts/text/server";
 import type { ArtifactKind } from "@/components/artifact";
+import type { Session } from "@supabase/supabase-js";
+import type { UIMessageStreamWriter } from "ai";
 import { saveDocument } from "../db/queries";
 import type { Document } from "../supabase/models";
 import type { ChatMessage } from "../types";
