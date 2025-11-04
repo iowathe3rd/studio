@@ -1,0 +1,241 @@
+```
+📁 AI Studio Feature - Полная структура
+══════════════════════════════════════════
+
+📂 app/studio/
+│
+├── 📄 layout.tsx                 # Layout с StudioSidebar
+├── 📄 page.tsx                   # Главная страница - список проектов
+│
+├── 📂 [id]/                      # Динамический роут проекта
+│   └── 📄 page.tsx               # ProjectStudio интерфейс
+│
+├── 📂 new/
+│   └── 📄 page.tsx               # Форма создания нового проекта
+│
+├── 📂 generations/
+│   └── 📄 page.tsx               # Все генерации пользователя
+│
+├── 📂 assets/
+│   └── 📄 page.tsx               # Все ассеты пользователя
+│
+└── 📂 templates/
+    └── 📄 page.tsx               # Шаблоны (coming soon)
+
+
+📂 components/studio/
+│
+├── 🎨 generation-panel.tsx       # Основная форма генерации
+│   ├── Выбор типа генерации (4 типа кнопками)
+│   ├── Выбор модели (clickable card → dialog)
+│   ├── Upload референсных изображений
+│   ├── Textarea для промпта
+│   ├── Advanced settings (collapsible card):
+│   │   ├── Negative prompt
+│   │   ├── Image size selector
+│   │   ├── Inference steps slider
+│   │   ├── Guidance scale slider
+│   │   └── Seed input + random toggle
+│   └── Generate button с loading state
+│
+├── 🔍 model-selector-dialog.tsx  # Модальное окно выбора модели
+│   ├── Search input
+│   ├── Scrollable список моделей
+│   ├── Badges: Quality, Type, Provider
+│   └── Selected indicator (checkmark)
+│
+├── 📜 generation-history.tsx     # История генераций
+│   ├── Auto-refresh (5s для активных)
+│   ├── Status badges с иконками
+│   ├── Thumbnails/placeholders
+│   ├── Metadata: model, type, time
+│   └── Actions: View, Download
+│
+├── 🖼️ asset-gallery.tsx          # Галерея файлов
+│   ├── Toolbar:
+│   │   ├── Search
+│   │   ├── Type filter
+│   │   ├── View mode toggle (Grid/List)
+│   │   └── Upload button
+│   ├── Grid view (responsive 2-4 columns)
+│   ├── List view (detailed rows)
+│   └── Asset cards с hover actions
+│
+├── 🏠 project-studio.tsx         # Главный интерфейс проекта
+│   ├── Project description bar
+│   ├── Grid layout (5/7 split на desktop)
+│   ├── Left: GenerationPanel
+│   └── Right: Tabs (History | Assets)
+│
+├── 📌 studio-header.tsx          # Шапка страниц
+│   ├── Title
+│   ├── Breadcrumbs (optional)
+│   └── "New Project" button
+│
+├── 🧭 studio-sidebar.tsx         # Боковая навигация
+│   ├── "New project" button
+│   ├── Navigation items:
+│   │   ├── Projects
+│   │   ├── Templates
+│   │   ├── Generations
+│   │   └── Assets
+│   ├── Quick Actions:
+│   │   ├── Generate Image
+│   │   └── Generate Video
+│   └── User nav (footer)
+│
+└── 📂 project/
+    ├── project-grid.tsx          # Grid проектов
+    └── project-card.tsx          # Карточка проекта
+
+
+📂 components/ui/ (новые)
+│
+├── 🪟 dialog.tsx                 # Radix Dialog
+├── 🎚️ slider.tsx                 # Radix Slider
+└── 🔘 switch.tsx                 # Radix Switch
+
+
+📂 lib/studio/
+│
+├── ⚙️ actions.ts                 # Server actions
+│   ├── getProjectsAction()
+│   ├── getProjectAction(id)
+│   ├── createProjectAction(...)
+│   ├── getProjectAssetsAction(id)
+│   ├── getUserAssetsAction()
+│   ├── getUserGenerationsAction()
+│   ├── getProjectGenerationsAction(id)
+│   └── generateAction(request) ⭐
+│
+├── 🤖 fal-client.ts              # fal.ai интеграция
+│   ├── FalClient class
+│   ├── submit() - отправка в очередь
+│   ├── getStatus() - проверка статуса
+│   ├── run() - синхронная генерация с polling
+│   └── uploadFile() - загрузка файлов
+│
+├── 🗺️ model-mapping.ts           # Маппинг моделей
+│   ├── inferGenerationType()
+│   ├── createModelModalityMapping()
+│   ├── getModelsByGenerationType()
+│   ├── getRecommendedModels()
+│   └── modelSupportsGenerationType()
+│
+├── 💾 queries.ts                 # Database queries
+│   ├── Project CRUD
+│   ├── Asset CRUD
+│   └── Generation CRUD
+│
+└── 📋 types.ts                   # TypeScript типы
+    ├── StudioProject
+    ├── StudioAsset
+    ├── StudioGeneration
+    ├── StudioGenerationType (union)
+    ├── FalGenerationInput
+    ├── FalGenerationOutput
+    └── GenerationRequest
+
+
+📂 lib/ai/
+│
+└── 🎭 studio-models.ts           # 40+ моделей
+    ├── FAL_MODEL_GROUPS[]
+    │   ├── Black Forest Labs (FLUX)
+    │   ├── Google (Veo 3.1)
+    │   ├── OpenAI (Sora 2)
+    │   ├── Runway
+    │   ├── Kling
+    │   ├── Mochi
+    │   └── fal.ai Latest
+    └── ALL_FAL_MODELS[]
+
+
+📂 docs/
+│
+├── 📖 STUDIO_GUIDE.md            # Детальное руководство
+└── 📋 ../STUDIO_CHANGELOG.md     # Changelog
+
+
+════════════════════════════════════════════════════════════
+
+🎯 WORKFLOW
+
+1. User → /studio
+2. Click "New project" → /studio/new
+3. Create project → redirect to /studio/[id]
+4. ProjectStudio loads:
+   ├── Left: GenerationPanel
+   └── Right: Tabs (History | Assets)
+5. User selects generation type
+6. User clicks model selector → ModelSelectorDialog
+7. User enters prompt + params
+8. User clicks "Generate" → generateAction()
+9. Backend:
+   ├── Create generation record (status: pending)
+   ├── Call fal.ai via FalClient
+   ├── Update status to processing
+   ├── Poll for completion
+   ├── Create asset record
+   └── Update status to completed
+10. Frontend:
+    ├── GenerationHistory auto-refreshes
+    ├── New generation appears
+    └── User can view/download
+
+════════════════════════════════════════════════════════════
+
+🎨 UI FLOW (VISUAL)
+
+┌─────────────────────────────────────────────────────────┐
+│ 🏠 Studio Header                    [+ New Project]     │
+├────────┬────────────────────────────────────────────────┤
+│        │                                                 │
+│ 🧭     │  📂 Projects Grid                              │
+│ Sidebar│  ┌──────┐ ┌──────┐ ┌──────┐                   │
+│        │  │ Card │ │ Card │ │ Card │                   │
+│ • Proj │  │      │ │      │ │      │                   │
+│ • Tmpl │  └──────┘ └──────┘ └──────┘                   │
+│ • Gen  │                                                 │
+│ • Aset │                                                 │
+│        │                                                 │
+└────────┴─────────────────────────────────────────────────┘
+
+Click Project →
+
+┌─────────────────────────────────────────────────────────┐
+│ 🏠 Project Title                                        │
+├────────┬──────────────────┬──────────────────────────────┤
+│        │                  │                              │
+│ 🧭     │ 🎨 Generation    │ 📜 [History] [Assets]       │
+│ Sidebar│ ┌──────────────┐ │ ┌──────────────────────┐   │
+│        │ │ Type Select  │ │ │ ⏳ Processing...    │   │
+│        │ ├──────────────┤ │ │ ✅ Completed        │   │
+│        │ │ Model Select │ │ │ ❌ Failed           │   │
+│        │ ├──────────────┤ │ └──────────────────────┘   │
+│        │ │ Upload       │ │                              │
+│        │ ├──────────────┤ │                              │
+│        │ │ Prompt       │ │                              │
+│        │ │              │ │                              │
+│        │ ├──────────────┤ │                              │
+│        │ │ ⚙️ Advanced  │ │                              │
+│        │ └──────────────┘ │                              │
+│        │ [🚀 Generate]    │                              │
+│        │                  │                              │
+└────────┴──────────────────┴──────────────────────────────┘
+
+════════════════════════════════════════════════════════════
+
+🔥 KEY FEATURES
+
+✅ 7 types of generation
+✅ 40+ AI models
+✅ Real-time status updates
+✅ Responsive design
+✅ Type-safe with TypeScript
+✅ Server-side rendering
+✅ Accessible UI (Radix)
+✅ RunwayML-inspired design
+
+════════════════════════════════════════════════════════════
+```

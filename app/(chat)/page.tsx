@@ -28,6 +28,8 @@ export default async function Page() {
     ? cookieModelValue
     : DEFAULT_CHAT_MODEL;
 
+  const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Guest";
+
   if (!modelIdFromCookie || !isValidChatModel(cookieModelValue)) {
     return (
       <>
@@ -39,6 +41,7 @@ export default async function Page() {
           initialVisibilityType="private"
           isReadonly={false}
           key={id}
+          userName={userName}
         />
         <DataStreamHandler />
       </>
@@ -55,6 +58,7 @@ export default async function Page() {
         initialVisibilityType="private"
         isReadonly={false}
         key={id}
+        userName={userName}
       />
       <DataStreamHandler />
     </>

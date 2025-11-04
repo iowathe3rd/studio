@@ -55,6 +55,8 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     ? cookieModelValue
     : DEFAULT_CHAT_MODEL;
 
+  const userName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Guest";
+
   if (!chatModelFromCookie || !isValidChatModel(cookieModelValue)) {
     return (
       <>
@@ -68,6 +70,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialMessages={uiMessages}
           initialVisibilityType={chat.visibility as VisibilityType}
           isReadonly={user?.id !== chat.userId}
+          userName={userName}
         />
         <DataStreamHandler />
       </>
@@ -86,6 +89,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialMessages={uiMessages}
         initialVisibilityType={chat.visibility as VisibilityType}
         isReadonly={user?.id !== chat.userId}
+        userName={userName}
       />
       <DataStreamHandler />
     </>

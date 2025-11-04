@@ -1,45 +1,45 @@
 "use client";
 
+import { saveChatModelAsCookie } from "@/app/(chat)/actions";
+import { SelectItem } from "@/components/ui/select";
+import { type ChatModelId, chatModels } from "@/lib/ai/models";
+import type { Attachment, ChatMessage } from "@/lib/types";
+import type { AppUsage } from "@/lib/usage";
+import { cn } from "@/lib/utils";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
 import {
-  type ChangeEvent,
-  type Dispatch,
-  memo,
-  type SetStateAction,
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
+    type ChangeEvent,
+    type Dispatch,
+    memo,
+    type SetStateAction,
+    startTransition,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
-import { saveChatModelAsCookie } from "@/app/(chat)/actions";
-import { SelectItem } from "@/components/ui/select";
-import { chatModels, type ChatModelId } from "@/lib/ai/models";
-import type { Attachment, ChatMessage } from "@/lib/types";
-import type { AppUsage } from "@/lib/usage";
-import { cn } from "@/lib/utils";
 import { Context } from "./elements/context";
 import {
-  PromptInput,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
+    PromptInput,
+    PromptInputModelSelect,
+    PromptInputModelSelectContent,
+    PromptInputSubmit,
+    PromptInputTextarea,
+    PromptInputToolbar,
+    PromptInputTools,
 } from "./elements/prompt-input";
 import {
-  ArrowUpIcon,
-  ChevronDownIcon,
-  CpuIcon,
-  PaperclipIcon,
-  StopIcon,
+    ArrowUpIcon,
+    ChevronDownIcon,
+    CpuIcon,
+    PaperclipIcon,
+    StopIcon,
 } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
@@ -300,15 +300,17 @@ function PureMultimodalInput({
   }, [handlePaste]);
 
   return (
-    <div className={cn("relative flex w-full flex-col gap-4", className)}>
+    <div className={cn("relative flex w-full flex-col gap-6", className)}>
       {messages.length === 0 &&
         attachments.length === 0 &&
         uploadQueue.length === 0 && (
-          <SuggestedActions
-            chatId={chatId}
-            selectedVisibilityType={selectedVisibilityType}
-            sendMessage={sendMessage}
-          />
+          <div className="mb-2">
+            <SuggestedActions
+              chatId={chatId}
+              selectedVisibilityType={selectedVisibilityType}
+              sendMessage={sendMessage}
+            />
+          </div>
         )}
 
       <input
@@ -373,7 +375,7 @@ function PureMultimodalInput({
             maxHeight={200}
             minHeight={44}
             onChange={handleInput}
-            placeholder="Send a message..."
+            placeholder="Ask a question or make a request..."
             ref={textareaRef}
             rows={1}
             value={input}

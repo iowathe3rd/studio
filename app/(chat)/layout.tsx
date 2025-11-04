@@ -22,9 +22,9 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <DataStreamProvider>
-        <SidebarProvider defaultOpen={!isCollapsed}>
+        <SidebarProvider defaultOpen={!isCollapsed} className="flex min-h-screen">
           <AppSidebar user={user ?? undefined} />
-          <SidebarInset>{children}</SidebarInset>
+          <SidebarInset className="flex-1">{children}</SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
     </>

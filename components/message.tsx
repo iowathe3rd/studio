@@ -255,7 +255,10 @@ const PurePreviewMessage = ({
                           ) : (
                             <DocumentToolResult
                               isReadonly={isReadonly}
-                              result={part.output}
+                              result={{
+                                ...part.output,
+                                kind: part.output.kind as "text" | "code" | "image" | "sheet"
+                              }}
                               type="request-suggestions"
                             />
                           )

@@ -1,25 +1,24 @@
 "use client";
 
-import { PlusIcon } from "@/components/icons";
 import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import type { User } from "@supabase/supabase-js";
+import { Film, FolderOpen, Layout, Plus, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Film, Sparkles, Layout, FolderOpen } from "lucide-react";
 
 export function StudioSidebar({ user }: { user: User }) {
   const router = useRouter();
@@ -62,7 +61,6 @@ export function StudioSidebar({ user }: { user: User }) {
       <SidebarHeader className="border-b border-sidebar-border">
         <SidebarMenu>
           <div className="flex flex-col gap-2 px-2 py-2">
-            {/* New Project Button */}
             <Button
               className="w-full justify-start gap-2 h-9 text-sm font-medium"
               onClick={() => {
@@ -71,34 +69,23 @@ export function StudioSidebar({ user }: { user: User }) {
               }}
               variant="outline"
             >
-              <PlusIcon size={16} />
+              <Plus className="h-4 w-4" />
               <span>New project</span>
             </Button>
-
-            {/* Studio Title */}
-            <div className="px-2 py-1">
-              <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                AI Studio
-              </h2>
-            </div>
           </div>
         </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-2">
-        {/* Navigation Items */}
         <SidebarGroup className="py-0">
-          <SidebarGroupLabel className="px-2 text-xs text-muted-foreground">
-            Navigation
-          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5">
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
                     isActive={isActive(item.href, item.exact)}
-                    className="h-9"
+                    className="h-8 text-sm"
                   >
                     <Link
                       href={item.href}
@@ -114,46 +101,43 @@ export function StudioSidebar({ user }: { user: User }) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Quick Actions */}
-        <SidebarGroup className="py-0 mt-4">
-          <SidebarGroupLabel className="px-2 text-xs text-muted-foreground">
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-2 text-xs text-muted-foreground font-normal tracking-tight mb-1">
             Quick Actions
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="px-2 py-2 space-y-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start h-8 text-xs"
-                onClick={() => {
-                  setOpenMobile(false);
-                  router.push("/studio/new?type=text-to-image");
-                }}
-              >
-                Generate Image
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start h-8 text-xs"
-                onClick={() => {
-                  setOpenMobile(false);
-                  router.push("/studio/new?type=text-to-video");
-                }}
-              >
-                Generate Video
-              </Button>
-            </div>
+            <SidebarMenu className="gap-0.5">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="h-8 text-sm"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push("/studio/new?type=text-to-image");
+                  }}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Generate Image</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="h-8 text-sm"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push("/studio/new?type=text-to-video");
+                  }}
+                >
+                  <Film className="h-4 w-4" />
+                  <span>Generate Video</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarUserNav user={user} />
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="border-t border-sidebar-border p-2">
+        <SidebarUserNav user={user} />
       </SidebarFooter>
     </Sidebar>
   );

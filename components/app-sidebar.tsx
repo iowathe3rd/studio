@@ -6,19 +6,20 @@ import { SidebarUserNav } from "@/components/sidebar-user-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarGroup,
-    SidebarGroupLabel,
-    SidebarGroupContent,
-    SidebarMenuItem,
-    SidebarMenuButton,
-    useSidebar,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { User } from "@supabase/supabase-js";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,16 +27,15 @@ import { toast } from "sonner";
 import { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { Search } from "lucide-react";
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -120,16 +120,6 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild className="h-8 text-sm">
-                    <Link href="/" onClick={() => setOpenMobile(false)}>
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>Atlas</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -152,30 +142,6 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     <span>Explore</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-sidebar-border bg-muted text-[10px]">
-                      📈
-                    </div>
-                    <span className="truncate text-sm">Finance & Economics</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-sidebar-border bg-muted text-[10px]">
-                      🏗️
-                    </div>
-                    <span className="truncate text-sm">Software Architect</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
-                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-sidebar-border bg-muted text-[10px]">
-                      🧜
-                    </div>
-                    <span className="truncate text-sm">Mermaid Chart</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -194,30 +160,6 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
                     <PlusIcon size={16} />
                     <span>New project</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    <span>Elesar</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
-                    <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-sidebar-border bg-muted text-[10px] font-semibold">
-                      $
-                    </div>
-                    <span>Frame</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled className="h-8 text-sm opacity-50 cursor-not-allowed">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                    <span>Я</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>

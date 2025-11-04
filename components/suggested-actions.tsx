@@ -1,10 +1,20 @@
 "use client";
 
+import type { ChatMessage } from "@/lib/types";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
+import {
+    BarChart3,
+    Calendar,
+    Database,
+    FileText,
+    Globe,
+    PieChart,
+    Target,
+    TrendingUp
+} from "lucide-react";
 import { memo } from "react";
-import type { ChatMessage } from "@/lib/types";
-import { Suggestion } from "./elements/suggestion";
+import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
 
 type SuggestedActionsProps = {
@@ -15,38 +25,67 @@ type SuggestedActionsProps = {
 
 function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
   const suggestedActions = [
-    "What are the advantages of using Next.js?",
-    "Write code to demonstrate Dijkstra's algorithm",
-    "Help me write an essay about Silicon Valley",
-    "What is the weather in San Francisco?",
+    {
+      icon: Database,
+      text: "Consolidate financial data from all subsidiaries",
+    },
+    {
+      icon: FileText,
+      text: "Generate the monthly income statement",
+    },
+    {
+      icon: Calendar,
+      text: "Reconcile the bank accounts for March",
+    },
+    {
+      icon: Globe,
+      text: "Book a journal entry",
+    },
+    {
+      icon: Target,
+      text: "Provide a 12-month cash flow forecast",
+    },
+    {
+      icon: BarChart3,
+      text: "Generate the quarterly profit and loss statement",
+    },
+    {
+      icon: TrendingUp,
+      text: "Show the budget variance for Q1 compared to actuals",
+    },
+    {
+      icon: PieChart,
+      text: "Create a real-time financial performance dashboard",
+    },
   ];
 
   return (
     <div
-      className="grid w-full gap-2 sm:grid-cols-2"
+      className="grid w-full gap-3 sm:grid-cols-2"
       data-testid="suggested-actions"
     >
-      {suggestedActions.map((suggestedAction, index) => (
+      {suggestedActions.map((action, index) => (
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           initial={{ opacity: 0, y: 20 }}
-          key={suggestedAction}
+          key={action.text}
           transition={{ delay: 0.05 * index }}
         >
-          <Suggestion
-            className="h-auto w-full whitespace-normal p-3 text-left"
-            onClick={(suggestion) => {
+          <Button
+            variant="outline"
+            className="h-auto w-full justify-start gap-3 p-4 text-left hover:bg-accent/50 transition-colors"
+            onClick={() => {
               window.history.replaceState({}, "", `/chat/${chatId}`);
               sendMessage({
                 role: "user",
-                parts: [{ type: "text", text: suggestion }],
+                parts: [{ type: "text", text: action.text }],
               });
             }}
-            suggestion={suggestedAction}
           >
-            {suggestedAction}
-          </Suggestion>
+            <action.icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <span className="text-sm whitespace-normal">{action.text}</span>
+          </Button>
         </motion.div>
       ))}
     </div>

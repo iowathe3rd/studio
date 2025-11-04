@@ -1,11 +1,5 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
 import {
   AlertDialog,
@@ -21,11 +15,17 @@ import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { ChatModelId } from "@/lib/ai/models";
-import type { Vote } from "@/lib/supabase/models";
 import { ChatSDKError } from "@/lib/errors";
+import type { Vote } from "@/lib/supabase/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import { Artifact } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
@@ -42,6 +42,7 @@ export function Chat({
   isReadonly,
   autoResume,
   initialLastContext,
+  userName,
 }: {
   id: string;
   initialMessages: ChatMessage[];
@@ -50,6 +51,7 @@ export function Chat({
   isReadonly: boolean;
   autoResume: boolean;
   initialLastContext?: AppUsage;
+  userName?: string;
 }) {
   const { visibilityType } = useChatVisibility({
     chatId: id,
@@ -177,6 +179,7 @@ export function Chat({
           setMessages={setMessages}
           status={status}
           votes={votes}
+          userName={userName}
         />
 
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
