@@ -1,8 +1,9 @@
 import type { Database } from "./types";
 
 export type Tables = Database["public"]["Tables"];
+export type Views = Database["public"]["Views"];
 
-export type User = Tables["User"]["Row"];
+export type User = Views["User"]["Row"];
 export type Chat = Tables["Chat"]["Row"];
 export type ChatInsert = Tables["Chat"]["Insert"];
 export type ChatUpdate = Tables["Chat"]["Update"];
