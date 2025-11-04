@@ -19,7 +19,7 @@ export const updateDocument = ({ user, dataStream }: UpdateDocumentProps) =>
         .string()
         .describe("The description of changes that need to be made"),
     }),
-    execute: async ({ id, description }) => {
+    execute: async ({ id, description }: { id: string; description: string }) => {
       const document = await getDocumentById({ id });
 
       if (!document) {

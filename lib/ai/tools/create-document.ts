@@ -21,7 +21,7 @@ export const createDocument = ({ user, dataStream }: CreateDocumentProps) =>
       title: z.string(),
       kind: z.enum(artifactKinds),
     }),
-    execute: async ({ title, kind }) => {
+    execute: async ({ title, kind }: { title: string; kind: typeof artifactKinds[number] }) => {
       const id = generateUUID();
 
       dataStream.write({
