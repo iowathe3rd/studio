@@ -1,41 +1,46 @@
 -- ============================================================================
 -- AI STUDIO - Media Generation System with fal.ai
 -- ============================================================================
+-- Following Supabase Auth best practices:
+-- 1. Reference auth.users(id) primary key
+-- 2. Always use ON DELETE CASCADE for auth.users foreign keys
+-- 3. Enable RLS on all tables
+-- ============================================================================
 
 -- Studio Projects - Основные проекты пользователей
-CREATE TABLE IF NOT EXISTS "StudioProject" (
-  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "userId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-  "title" TEXT NOT NULL,
-  "description" TEXT,
-  "thumbnail" TEXT, -- URL к превью проекта
-  "settings" JSONB DEFAULT '{}', -- Настройки проекта (разрешение, fps, и т.д.)
-  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-  "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
+create table if not exists public."StudioProject" (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  title text not null,
+  description text,
+  thumbnail text,
+  settings jsonb default '{}'::jsonb,
+  created_at timestamp with time zone not null default now(),
+  updated_at timestamp with time zone not null default now()
 );
 
 -- Studio Assets - Медиа файлы (изображения, видео, аудио)
-CREATE TABLE IF NOT EXISTS "StudioAsset" (
-  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "projectId" UUID REFERENCES "StudioProject"("id") ON DELETE SET NULL,
-  "userId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-  "type" TEXT NOT NULL CHECK ("type" IN ('image', 'video', 'audio')),
-  "name" TEXT NOT NULL,
-  "url" TEXT NOT NULL, -- URL к файлу (Supabase Storage или CDN)
-  "thumbnailUrl" TEXT, -- URL к превью
-  "metadata" JSONB DEFAULT '{}', -- { width, height, duration, format, size, etc }
-  "sourceType" TEXT CHECK ("sourceType" IN ('upload', 'generated', 'imported')),
-  "sourceGenerationId" UUID, -- Ссылка на StudioGeneration если сгенерировано
-  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+create table if not exists public."StudioAsset" (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid references public."StudioProject" (id) on delete set null,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  type text not null check (type in ('image', 'video', 'audio')),
+  name text not null,
+  url text not null,
+  thumbnail_url text,
+  metadata jsonb default '{}'::jsonb,
+  source_type text check (source_type in ('upload', 'generated', 'imported')),
+  source_generation_id uuid,
+  created_at timestamp with time zone not null default now()
 );
 
 -- Studio Generations - История генераций AI
-CREATE TABLE IF NOT EXISTS "StudioGeneration" (
-  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "projectId" UUID REFERENCES "StudioProject"("id") ON DELETE SET NULL,
-  "userId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
-  "modelId" TEXT NOT NULL, -- fal.ai model ID (e.g., 'fal-ai/flux/dev', 'veo3.1')
-  "generationType" TEXT NOT NULL CHECK ("generationType" IN (
+create table if not exists public."StudioGeneration" (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid references public."StudioProject" (id) on delete set null,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  model_id text not null,
+  generation_type text not null check (generation_type in (
     'text-to-image',
     'text-to-video',
     'image-to-image',
@@ -44,130 +49,158 @@ CREATE TABLE IF NOT EXISTS "StudioGeneration" (
     'inpaint',
     'lipsync'
   )),
-  "status" TEXT NOT NULL DEFAULT 'pending' CHECK ("status" IN (
+  status text not null default 'pending' check (status in (
     'pending',
     'processing',
     'completed',
     'failed',
     'cancelled'
   )),
-  "prompt" TEXT, -- Текстовый промпт
-  "negativePrompt" TEXT,
-  "referenceImageUrl" TEXT, -- Reference image URL
-  "firstFrameUrl" TEXT, -- First frame для keyframe генерации
-  "lastFrameUrl" TEXT, -- Last frame для keyframe генерации
-  "referenceVideoUrl" TEXT, -- Reference video URL для video-to-video
-  "inputAssetId" UUID REFERENCES "StudioAsset"("id") ON DELETE SET NULL,
-  "outputAssetId" UUID REFERENCES "StudioAsset"("id") ON DELETE SET NULL,
-  "parameters" JSONB NOT NULL DEFAULT '{}', -- Параметры генерации (resolution, fps, duration, etc)
-  "falRequestId" TEXT, -- ID запроса в fal.ai для polling статуса
-  "falResponse" JSONB, -- Полный ответ от fal.ai
-  "error" TEXT,
-  "cost" NUMERIC(10, 4), -- Стоимость генерации в кредитах
-  "processingTime" INTEGER, -- Время обработки в секундах
-  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-  "completedAt" TIMESTAMP
+  prompt text,
+  negative_prompt text,
+  reference_image_url text,
+  first_frame_url text,
+  last_frame_url text,
+  reference_video_url text,
+  input_asset_id uuid references public."StudioAsset" (id) on delete set null,
+  output_asset_id uuid references public."StudioAsset" (id) on delete set null,
+  parameters jsonb not null default '{}'::jsonb,
+  fal_request_id text,
+  fal_response jsonb,
+  error text,
+  cost numeric(10, 4),
+  processing_time integer,
+  created_at timestamp with time zone not null default now(),
+  completed_at timestamp with time zone
 );
 
+-- Добавляем foreign key для source_generation_id после создания StudioGeneration
+alter table public."StudioAsset"
+  add constraint fk_asset_source_generation
+  foreign key (source_generation_id)
+  references public."StudioGeneration" (id)
+  on delete set null;
+
 -- Studio Templates - Шаблоны и пресеты
-CREATE TABLE IF NOT EXISTS "StudioTemplate" (
-  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "userId" UUID REFERENCES "User"("id") ON DELETE SET NULL,
-  "type" TEXT NOT NULL CHECK ("type" IN ('project', 'prompt', 'style')),
-  "name" TEXT NOT NULL,
-  "description" TEXT,
-  "thumbnail" TEXT,
-  "modelId" TEXT, -- Связанная модель fal.ai
-  "config" JSONB NOT NULL DEFAULT '{}',
-  "isPublic" BOOLEAN DEFAULT false,
-  "usageCount" INTEGER DEFAULT 0,
-  "createdAt" TIMESTAMP NOT NULL DEFAULT NOW()
+create table if not exists public."StudioTemplate" (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users (id) on delete set null,
+  type text not null check (type in ('project', 'prompt', 'style')),
+  name text not null,
+  description text,
+  thumbnail text,
+  model_id text,
+  config jsonb not null default '{}'::jsonb,
+  is_public boolean default false,
+  usage_count integer default 0,
+  created_at timestamp with time zone not null default now()
 );
 
 -- Индексы для производительности
-CREATE INDEX IF NOT EXISTS "idx_studio_project_user" ON "StudioProject"("userId");
-CREATE INDEX IF NOT EXISTS "idx_studio_project_updated" ON "StudioProject"("updatedAt" DESC);
+create index if not exists idx_studio_project_user on public."StudioProject" (user_id);
+create index if not exists idx_studio_project_updated on public."StudioProject" (updated_at desc);
 
-CREATE INDEX IF NOT EXISTS "idx_studio_asset_project" ON "StudioAsset"("projectId");
-CREATE INDEX IF NOT EXISTS "idx_studio_asset_user" ON "StudioAsset"("userId");
-CREATE INDEX IF NOT EXISTS "idx_studio_asset_type" ON "StudioAsset"("type");
-CREATE INDEX IF NOT EXISTS "idx_studio_asset_created" ON "StudioAsset"("createdAt" DESC);
+create index if not exists idx_studio_asset_project on public."StudioAsset" (project_id);
+create index if not exists idx_studio_asset_user on public."StudioAsset" (user_id);
+create index if not exists idx_studio_asset_type on public."StudioAsset" (type);
+create index if not exists idx_studio_asset_created on public."StudioAsset" (created_at desc);
 
-CREATE INDEX IF NOT EXISTS "idx_studio_generation_user" ON "StudioGeneration"("userId");
-CREATE INDEX IF NOT EXISTS "idx_studio_generation_project" ON "StudioGeneration"("projectId");
-CREATE INDEX IF NOT EXISTS "idx_studio_generation_status" ON "StudioGeneration"("status");
-CREATE INDEX IF NOT EXISTS "idx_studio_generation_model" ON "StudioGeneration"("modelId");
-CREATE INDEX IF NOT EXISTS "idx_studio_generation_created" ON "StudioGeneration"("createdAt" DESC);
+create index if not exists idx_studio_generation_user on public."StudioGeneration" (user_id);
+create index if not exists idx_studio_generation_project on public."StudioGeneration" (project_id);
+create index if not exists idx_studio_generation_status on public."StudioGeneration" (status);
+create index if not exists idx_studio_generation_model on public."StudioGeneration" (model_id);
+create index if not exists idx_studio_generation_created on public."StudioGeneration" (created_at desc);
 
-CREATE INDEX IF NOT EXISTS "idx_studio_template_public" ON "StudioTemplate"("isPublic") WHERE "isPublic" = true;
-CREATE INDEX IF NOT EXISTS "idx_studio_template_user" ON "StudioTemplate"("userId");
+create index if not exists idx_studio_template_public on public."StudioTemplate" (is_public) where is_public = true;
+create index if not exists idx_studio_template_user on public."StudioTemplate" (user_id);
 
--- RLS Policies
-ALTER TABLE "StudioProject" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "StudioAsset" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "StudioGeneration" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "StudioTemplate" ENABLE ROW LEVEL SECURITY;
+-- Enable Row Level Security
+alter table public."StudioProject" enable row level security;
+alter table public."StudioAsset" enable row level security;
+alter table public."StudioGeneration" enable row level security;
+alter table public."StudioTemplate" enable row level security;
 
--- StudioProject policies
-CREATE POLICY "Users can view their own projects"
-  ON "StudioProject" FOR SELECT
-  USING (auth.uid() = "userId");
+-- StudioProject RLS Policies
+create policy "Users can view their own projects"
+  on public."StudioProject" for select
+  to authenticated
+  using (auth.uid() = user_id);
 
-CREATE POLICY "Users can create their own projects"
-  ON "StudioProject" FOR INSERT
-  WITH CHECK (auth.uid() = "userId");
+create policy "Users can create their own projects"
+  on public."StudioProject" for insert
+  to authenticated
+  with check (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own projects"
-  ON "StudioProject" FOR UPDATE
-  USING (auth.uid() = "userId");
+create policy "Users can update their own projects"
+  on public."StudioProject" for update
+  to authenticated
+  using (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own projects"
-  ON "StudioProject" FOR DELETE
-  USING (auth.uid() = "userId");
+create policy "Users can delete their own projects"
+  on public."StudioProject" for delete
+  to authenticated
+  using (auth.uid() = user_id);
 
--- StudioAsset policies
-CREATE POLICY "Users can view their own assets"
-  ON "StudioAsset" FOR SELECT
-  USING (auth.uid() = "userId");
+-- StudioAsset RLS Policies
+create policy "Users can view their own assets"
+  on public."StudioAsset" for select
+  to authenticated
+  using (auth.uid() = user_id);
 
-CREATE POLICY "Users can create their own assets"
-  ON "StudioAsset" FOR INSERT
-  WITH CHECK (auth.uid() = "userId");
+create policy "Users can create their own assets"
+  on public."StudioAsset" for insert
+  to authenticated
+  with check (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own assets"
-  ON "StudioAsset" FOR UPDATE
-  USING (auth.uid() = "userId");
+create policy "Users can update their own assets"
+  on public."StudioAsset" for update
+  to authenticated
+  using (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own assets"
-  ON "StudioAsset" FOR DELETE
-  USING (auth.uid() = "userId");
+create policy "Users can delete their own assets"
+  on public."StudioAsset" for delete
+  to authenticated
+  using (auth.uid() = user_id);
 
--- StudioGeneration policies
-CREATE POLICY "Users can view their own generations"
-  ON "StudioGeneration" FOR SELECT
-  USING (auth.uid() = "userId");
+-- StudioGeneration RLS Policies
+create policy "Users can view their own generations"
+  on public."StudioGeneration" for select
+  to authenticated
+  using (auth.uid() = user_id);
 
-CREATE POLICY "Users can create their own generations"
-  ON "StudioGeneration" FOR INSERT
-  WITH CHECK (auth.uid() = "userId");
+create policy "Users can create their own generations"
+  on public."StudioGeneration" for insert
+  to authenticated
+  with check (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own generations"
-  ON "StudioGeneration" FOR UPDATE
-  USING (auth.uid() = "userId");
+create policy "Users can update their own generations"
+  on public."StudioGeneration" for update
+  to authenticated
+  using (auth.uid() = user_id);
 
--- StudioTemplate policies
-CREATE POLICY "Anyone can view public templates"
-  ON "StudioTemplate" FOR SELECT
-  USING ("isPublic" = true OR auth.uid() = "userId");
+-- StudioTemplate RLS Policies
+create policy "Anyone can view public templates"
+  on public."StudioTemplate" for select
+  to authenticated
+  using (is_public = true or auth.uid() = user_id);
 
-CREATE POLICY "Users can create their own templates"
-  ON "StudioTemplate" FOR INSERT
-  WITH CHECK (auth.uid() = "userId");
+create policy "Users can create their own templates"
+  on public."StudioTemplate" for insert
+  to authenticated
+  with check (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own templates"
-  ON "StudioTemplate" FOR UPDATE
-  USING (auth.uid() = "userId");
+create policy "Users can update their own templates"
+  on public."StudioTemplate" for update
+  to authenticated
+  using (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete their own templates"
-  ON "StudioTemplate" FOR DELETE
-  USING (auth.uid() = "userId");
+create policy "Users can delete their own templates"
+  on public."StudioTemplate" for delete
+  to authenticated
+  using (auth.uid() = user_id);
+
+-- Comments for documentation
+comment on table public."StudioProject" is 'AI Studio projects for organizing media generation work';
+comment on table public."StudioAsset" is 'Generated and uploaded media assets (images, videos, audio)';
+comment on table public."StudioGeneration" is 'History of AI generation requests and their results';
+comment on table public."StudioTemplate" is 'Reusable templates and presets for generation';
