@@ -200,37 +200,22 @@ export async function getUser(email: string): Promise<User[]> {
   return data ?? [];
 }
 
+// Note: User creation is now handled by Supabase Auth
+// This function is deprecated and should not be used
 export async function createUser(email: string, password: string) {
-  const supabase = await getSupabase();
-  const hashedPassword = generateHashedPassword(password);
-
-  const { error } = await supabase
-    .from("User")
-    .insert({ email, password: hashedPassword });
-
-  if (error) {
-    throw new ChatSDKError("bad_request:database", "Failed to create user");
-  }
+  throw new ChatSDKError(
+    "bad_request:database", 
+    "User creation is managed by Supabase Auth. Use supabase.auth.signUp() instead."
+  );
 }
 
+// Note: Guest user creation is now handled by Supabase Auth
+// This function is deprecated and should not be used
 export async function createGuestUser() {
-  const supabase = await getSupabase();
-  const email = `guest-${Date.now()}`;
-  const password = generateHashedPassword(generateUUID());
-
-  const { data, error } = await supabase
-    .from("User")
-    .insert({ email, password })
-    .select("id, email");
-
-  if (error) {
-    throw new ChatSDKError(
-      "bad_request:database",
-      "Failed to create guest user",
-    );
-  }
-
-  return data ?? [];
+  throw new ChatSDKError(
+    "bad_request:database",
+    "Guest user creation is managed by Supabase Auth. Use supabase.auth.signInAnonymously() instead."
+  );
 }
 
 export async function saveChat({
