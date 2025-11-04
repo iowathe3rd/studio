@@ -1,5 +1,7 @@
-import { StudioLayoutWrapper } from "@/components/studio/studio-layout-wrapper";
+import { StudioSidebar } from "@/components/studio/studio-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getUser } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function StudioLayout({
@@ -13,9 +15,15 @@ export default async function StudioLayout({
     redirect("/login");
   }
 
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
+
   return (
-    <StudioLayoutWrapper user={user}>
-      {children}
-    </StudioLayoutWrapper>
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <StudioSidebar user={user} variant="inset" collapsible="icon" />
+      <SidebarInset>
+        {children}
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

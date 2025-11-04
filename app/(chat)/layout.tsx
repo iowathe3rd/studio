@@ -1,6 +1,8 @@
-import { ChatLayoutWrapper } from "@/components/chat-layout-wrapper";
+import { AppSidebar } from "@/components/app-sidebar";
 import { DataStreamProvider } from "@/components/data-stream-provider";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getUser } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import Script from "next/script";
 
 export const experimental_ppr = true;
@@ -11,6 +13,8 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const user = await getUser();
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
 
   return (
     <>
@@ -19,9 +23,12 @@ export default async function Layout({
         strategy="beforeInteractive"
       />
       <DataStreamProvider>
-        <ChatLayoutWrapper user={user ?? undefined}>
-          {children}
-        </ChatLayoutWrapper>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <AppSidebar user={user ?? undefined} variant="inset" collapsible="icon" />
+          <SidebarInset>
+            {children}
+          </SidebarInset>
+        </SidebarProvider>
       </DataStreamProvider>
     </>
   );
