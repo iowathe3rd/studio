@@ -2,6 +2,40 @@
 
 ## Дата: 5 ноября 2025
 
+### 🎨 UI: Improved Sidebar Collapsible State
+
+**Sidebar теперь имеет минималистичное collapsed состояние**
+
+#### Что изменилось:
+- ✅ **Collapsed state (48px)**: Видны только иконки с tooltips
+  - New Chat (всегда доступен)
+  - Search (при клике открывает sidebar)
+  - User Avatar (с dropdown меню)
+- ✅ **Expanded state (256px)**: Полный контент
+  - Team Switcher
+  - Search input field
+  - AI Models list
+  - Chat History
+  - Full user info
+- ✅ Smart search behavior: кнопка поиска автоматически разворачивает sidebar
+- ✅ NavUser: в collapsed только аватар, в expanded полная инфа
+- ✅ Tooltips для всех кнопок в collapsed состоянии
+
+#### Визуальное сравнение:
+```
+Collapsed: [☰][+][🔍][👤]  (48px)
+Expanded:  [Full Sidebar]  (256px)
+```
+
+#### Затронутые файлы:
+- `components/app-sidebar.tsx` - обновлена структура с visibility классами
+- `components/nav-user.tsx` - добавлено скрытие текста в collapsed
+- `components/nav-main.tsx` - уже имел group-data-[collapsible=icon]:hidden
+
+Подробнее: `docs/SIDEBAR_COLLAPSIBLE_GUIDE.md`
+
+---
+
 ### 🎨 UI: Model Selector Migration to Header (ChatGPT-style)
 
 **Селектор модели перемещён из input toolbar в chat header**

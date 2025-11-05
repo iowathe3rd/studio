@@ -35,7 +35,7 @@ export function AppSidebar({
   user: User | undefined;
 } & React.ComponentProps<typeof Sidebar>) {
   const router = useRouter()
-  const { setOpenMobile } = useSidebar()
+  const { setOpenMobile, open, setOpen } = useSidebar()
   const [searchQuery, setSearchQuery] = React.useState("")
 
   const teams = [
@@ -65,7 +65,12 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={teams} />
+        {/* Team Switcher - скрыть в collapsed состоянии */}
+        <div className="group-data-[collapsible=icon]:hidden">
+          <TeamSwitcher teams={teams} />
+        </div>
+
+        {/* New Chat - всегда видна с tooltip в collapsed */}
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -81,24 +86,37 @@ export function AppSidebar({
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        {/* Search - иконка всегда видна, при клике открывает sidebar */}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <div className="flex items-center gap-2 px-2">
-                <Search className="h-4 w-4" />
-                <Input
-                  type="search"
-                  placeholder="Search chats..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-8 border-none shadow-none focus-visible:ring-0"
-                />
-              </div>
+            <SidebarMenuButton 
+              tooltip="Search chats"
+              onClick={() => {
+                if (!open) {
+                  setOpen(true)
+                }
+              }}
+            >
+              <Search className="h-4 w-4" />
+              <span className="group-data-[collapsible=icon]:hidden">Search</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        {/* Search Input - только в expanded состоянии */}
+        <div className="group-data-[collapsible=icon]:hidden px-2 pb-2">
+          <Input
+            type="search"
+            placeholder="Search chats..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="h-8"
+          />
+        </div>
       </SidebarHeader>
       <SidebarContent>
+        {/* NavMain уже имеет group-data-[collapsible=icon]:hidden */}
         <NavMain 
           items={[
             {
@@ -110,9 +128,14 @@ export function AppSidebar({
             },
           ]} 
         />
-        <SidebarHistory user={user} searchQuery={searchQuery} />
+        
+        {/* SidebarHistory - скрыть в collapsed состоянии */}
+        <div className="group-data-[collapsible=icon]:hidden">
+          <SidebarHistory user={user} searchQuery={searchQuery} />
+        </div>
       </SidebarContent>
       <SidebarFooter>
+        {/* NavUser - скрыть детали в collapsed, показать только аватар */}
         <NavUser 
           user={{
             name: userName,
