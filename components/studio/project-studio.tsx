@@ -46,8 +46,8 @@ export function ProjectStudio({
     <div className="flex h-full flex-col bg-background">
       {/* Project Description */}
       {project.description && (
-        <div className="border-b bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-blue-500/5 px-6 py-4">
-          <p className="text-muted-foreground text-sm leading-relaxed">
+        <div className="border-b bg-muted/30 px-4 py-2">
+          <p className="text-muted-foreground text-xs leading-relaxed">
             {project.description}
           </p>
         </div>
@@ -56,7 +56,7 @@ export function ProjectStudio({
       {/* Main Content - Grid Layout */}
       <div className="grid flex-1 grid-cols-1 gap-0 overflow-hidden lg:grid-cols-12">
         {/* Left Panel - Generation Form */}
-        <div className="overflow-hidden border-r bg-card/50 lg:col-span-5 xl:col-span-4">
+        <div className="overflow-hidden border-r bg-card/30 lg:col-span-5 xl:col-span-4">
           <GenerationPanel
             onGenerationComplete={handleGenerationComplete}
             onGenerationStart={handleGenerationStart}
@@ -71,34 +71,34 @@ export function ProjectStudio({
             onValueChange={setActiveTab}
             value={activeTab}
           >
-            <div className="border-b bg-card/30 px-6 py-2 backdrop-blur-sm">
-              <TabsList className="h-11 bg-background/50">
+            <div className="border-b bg-muted/20 px-4 py-1.5">
+              <TabsList className="h-9 bg-background/50">
                 <TabsTrigger
-                  className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/10 data-[state=active]:to-pink-500/10 data-[state=active]:text-purple-700 dark:data-[state=active]:text-purple-400"
+                  className="gap-1.5 text-xs data-[state=active]:bg-muted data-[state=active]:text-foreground"
                   value="generate"
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Sparkles className="h-3.5 w-3.5" />
                   <span className="font-medium">Generation History</span>
                 </TabsTrigger>
                 <TabsTrigger
-                  className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500/10 data-[state=active]:to-purple-500/10 data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400"
+                  className="gap-1.5 text-xs data-[state=active]:bg-muted data-[state=active]:text-foreground"
                   value="assets"
                 >
-                  <FolderOpen className="h-4 w-4" />
+                  <FolderOpen className="h-3.5 w-3.5" />
                   <span className="font-medium">Assets Library</span>
                 </TabsTrigger>
               </TabsList>
             </div>
 
             <div className="flex-1 overflow-auto">
-              <TabsContent className="mt-0 h-full p-6" value="generate">
+              <TabsContent className="mt-0 h-full p-4" value="generate">
                 <GenerationHistory
                   generations={generations}
                   onRefresh={refreshGenerations}
                 />
               </TabsContent>
 
-              <TabsContent className="mt-0 h-full p-6" value="assets">
+              <TabsContent className="mt-0 h-full p-4" value="assets">
                 <AssetGallery assets={assets} />
               </TabsContent>
             </div>

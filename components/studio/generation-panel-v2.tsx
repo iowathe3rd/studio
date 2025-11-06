@@ -301,13 +301,13 @@ export function GenerationPanelV2({
 
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-6 p-6">
+      <div className="space-y-4 p-4">
         {/* Header */}
-        <div className="space-y-2">
-          <h2 className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text font-bold text-2xl text-transparent tracking-tight">
+        <div className="space-y-1">
+          <h2 className="font-semibold text-foreground text-base tracking-tight">
             Generate Content
           </h2>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-xs">
             Choose your generation type, select a model, and configure
             parameters
           </p>
@@ -316,9 +316,9 @@ export function GenerationPanelV2({
         <Separator />
 
         {/* Generation Type Selector */}
-        <div className="space-y-3">
-          <Label className="font-medium text-sm">Generation Type</Label>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label className="font-medium text-xs">Generation Type</Label>
+          <div className="grid grid-cols-2 gap-2">
             {GENERATION_TYPES.map((type) => {
               const Icon = type.icon;
               const isActive = generationType === type.value;
@@ -326,27 +326,27 @@ export function GenerationPanelV2({
               return (
                 <button
                   className={cn(
-                    "flex items-start gap-3 rounded-xl border p-3 text-left transition-all",
+                    "flex items-start gap-2 rounded-lg border p-2 text-left transition-all",
                     isActive
-                      ? "border-purple-500 bg-purple-500/5 shadow-purple-500/10 shadow-sm"
-                      : "border-border bg-background hover:border-purple-500/50 hover:bg-accent/50"
+                      ? "border-foreground bg-muted"
+                      : "border-border bg-background hover:border-foreground/50 hover:bg-muted/50"
                   )}
                   key={type.value}
                   onClick={() => handleGenerationTypeChange(type.value)}
                 >
                   <div
                     className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all",
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-all",
                       isActive
-                        ? "bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-md"
-                        : "bg-muted/50 text-muted-foreground"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3.5 w-3.5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="mb-0.5 font-medium text-sm">{type.label}</h4>
-                    <p className="line-clamp-2 text-muted-foreground/80 text-xs">
+                    <h4 className="mb-0.5 font-medium text-xs">{type.label}</h4>
+                    <p className="line-clamp-2 text-muted-foreground text-[10px] leading-tight">
                       {type.description}
                     </p>
                   </div>
@@ -357,53 +357,53 @@ export function GenerationPanelV2({
         </div>
 
         {/* Model Selector */}
-        <div className="space-y-3">
-          <Label className="font-medium text-sm">AI Model</Label>
+        <div className="space-y-2">
+          <Label className="font-medium text-xs">AI Model</Label>
           <button
-            className="group flex w-full items-start justify-between rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-purple-500/50 hover:bg-card/80"
+            className="group flex w-full items-start justify-between rounded-lg border border-border bg-card p-2.5 text-left transition-all hover:border-foreground/50 hover:bg-muted/50"
             onClick={() => setModelDialogOpen(true)}
           >
             {selectedModel ? (
-              <div className="min-w-0 flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm">
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-xs">
                     {selectedModel.name}
                   </span>
                   {selectedModel.quality && (
                     <Badge
-                      className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 px-2 py-0.5 text-xs"
+                      className="px-1.5 py-0 text-[10px]"
                       variant="secondary"
                     >
                       {selectedModel.quality}
                     </Badge>
                   )}
                 </div>
-                <p className="line-clamp-1 text-muted-foreground text-xs">
+                <p className="line-clamp-1 text-muted-foreground text-[10px]">
                   {selectedModel.description}
                 </p>
                 <ModelCapabilityBadge model={selectedModel} />
               </div>
             ) : (
-              <span className="text-muted-foreground text-sm">
+              <span className="text-muted-foreground text-xs">
                 Select a model...
               </span>
             )}
-            <ChevronRight className="ml-2 h-5 w-5 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-purple-500" />
+            <ChevronRight className="ml-2 h-4 w-4 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-foreground" />
           </button>
 
           {/* Model Requirements Info */}
           {selectedModel &&
             (modelRequirements.required.length > 0 ||
               modelRequirements.optional.length > 0) && (
-              <Card className="border-blue-500/20 bg-blue-500/5">
-                <CardContent className="px-4 pt-4 pb-3">
-                  <div className="flex items-start gap-2">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                    <div className="space-y-1">
-                      <p className="font-medium text-blue-900 text-xs dark:text-blue-100">
+              <Card className="border-border bg-muted/30">
+                <CardContent className="px-2.5 pt-2.5 pb-2">
+                  <div className="flex items-start gap-1.5">
+                    <Info className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+                    <div className="space-y-0.5">
+                      <p className="font-medium text-foreground text-[10px]">
                         Model Requirements
                       </p>
-                      <p className="text-blue-700 text-xs dark:text-blue-300">
+                      <p className="text-muted-foreground text-[10px] leading-tight">
                         {modelRequirements.required.length > 0 && (
                           <>
                             <strong>Required:</strong>{" "}
@@ -431,11 +431,11 @@ export function GenerationPanelV2({
         {selectedModel &&
           (modelRequirements.required.length > 0 ||
             modelRequirements.optional.length > 0) && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Separator />
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2 font-medium text-sm">
-                  <ImageIcon className="h-4 w-4" />
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5 font-medium text-xs">
+                  <ImageIcon className="h-3.5 w-3.5" />
                   Reference Inputs
                 </Label>
 
@@ -478,30 +478,32 @@ export function GenerationPanelV2({
 
         {/* Quick Actions */}
         <Separator />
-        <div className="space-y-3">
-          <Label className="font-medium text-sm">Quick Start</Label>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label className="font-medium text-xs">Quick Start</Label>
+          <div className="grid grid-cols-2 gap-2">
             <Button
-              className="h-auto flex-col gap-1 py-3 hover:border-purple-500/50 hover:bg-purple-500/5"
+              className="h-auto flex-col gap-0.5 py-2"
               disabled={isGenerating}
               onClick={() => setTemplateDialogOpen(true)}
+              size="sm"
               variant="outline"
             >
-              <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              <span className="font-medium text-xs">Prompt Templates</span>
-              <span className="text-muted-foreground text-xs">
+              <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-medium text-[10px]">Prompt Templates</span>
+              <span className="text-muted-foreground text-[9px]">
                 Ready-made prompts
               </span>
             </Button>
             <Button
-              className="h-auto flex-col gap-1 py-3 hover:border-blue-500/50 hover:bg-blue-500/5"
+              className="h-auto flex-col gap-0.5 py-2"
               disabled={isGenerating}
               onClick={() => setProjectTemplateDialogOpen(true)}
+              size="sm"
               variant="outline"
             >
-              <Wand2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span className="font-medium text-xs">Project Templates</span>
-              <span className="text-muted-foreground text-xs">
+              <Wand2 className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="font-medium text-[10px]">Project Templates</span>
+              <span className="text-muted-foreground text-[9px]">
                 Pre-configured setups
               </span>
             </Button>
@@ -512,39 +514,39 @@ export function GenerationPanelV2({
         {needsPrompt && (
           <>
             <Separator />
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label
-                  className="flex items-center gap-2 font-medium text-sm"
+                  className="flex items-center gap-1.5 font-medium text-xs"
                   htmlFor="prompt"
                 >
                   Prompt
-                  <Badge className="px-1.5 py-0 text-xs" variant="destructive">
+                  <Badge className="px-1 py-0 text-[9px]" variant="destructive">
                     Required
                   </Badge>
                 </Label>
                 <Button
-                  className="h-7 text-purple-600 text-xs hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+                  className="h-6 text-[10px]"
                   disabled={isGenerating}
                   onClick={() => setTemplateDialogOpen(true)}
                   size="sm"
                   variant="ghost"
                 >
-                  <Sparkles className="mr-1 h-3 w-3" />
+                  <Sparkles className="mr-0.5 h-2.5 w-2.5" />
                   Use Template
                 </Button>
               </div>
               <Textarea
-                className="resize-none"
+                className="resize-none text-xs"
                 disabled={isGenerating}
                 id="prompt"
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Describe what you want to generate in detail... or click 'Use Template' for ready-made prompts"
-                rows={5}
+                rows={4}
                 value={prompt}
               />
-              <p className="flex items-center gap-1 text-muted-foreground text-xs">
-                <Info className="h-3 w-3" />
+              <p className="flex items-center gap-1 text-muted-foreground text-[10px]">
+                <Info className="h-2.5 w-2.5" />
                 Be specific and descriptive for best results
               </p>
             </div>
@@ -555,30 +557,30 @@ export function GenerationPanelV2({
         <Separator />
         <Accordion collapsible defaultValue="advanced" type="single">
           <AccordionItem className="border-none" value="advanced">
-            <AccordionTrigger className="py-3 hover:no-underline">
-              <span className="font-medium text-sm">Advanced Settings</span>
+            <AccordionTrigger className="py-2 hover:no-underline">
+              <span className="font-medium text-xs">Advanced Settings</span>
             </AccordionTrigger>
-            <AccordionContent className="space-y-4 pt-2">
+            <AccordionContent className="space-y-3 pt-1">
               {/* Negative Prompt */}
-              <div className="space-y-2">
-                <Label className="text-xs" htmlFor="negative-prompt">
+              <div className="space-y-1.5">
+                <Label className="text-[10px]" htmlFor="negative-prompt">
                   Negative Prompt
                 </Label>
                 <Textarea
-                  className="resize-none text-sm"
+                  className="resize-none text-xs"
                   disabled={isGenerating}
                   id="negative-prompt"
                   onChange={(e) => setNegativePrompt(e.target.value)}
                   placeholder="What to avoid in the generation..."
-                  rows={3}
+                  rows={2}
                   value={negativePrompt}
                 />
               </div>
 
               {/* Image Size - Only for image models */}
               {selectedModel?.type === "image" && (
-                <div className="space-y-2">
-                  <Label className="text-xs" htmlFor="image-size">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px]" htmlFor="image-size">
                     Image Size
                   </Label>
                   <Select
@@ -586,7 +588,7 @@ export function GenerationPanelV2({
                     onValueChange={setImageSize}
                     value={imageSize}
                   >
-                    <SelectTrigger id="image-size">
+                    <SelectTrigger className="h-8 text-xs" id="image-size">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -611,10 +613,10 @@ export function GenerationPanelV2({
 
               {/* Duration - Only for video models */}
               {selectedModel?.type === "video" && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs">Duration (seconds)</Label>
-                    <span className="text-muted-foreground text-xs">
+                    <Label className="text-[10px]">Duration (seconds)</Label>
+                    <span className="text-muted-foreground text-[10px]">
                       {duration[0]}s
                     </span>
                   </div>
@@ -631,10 +633,10 @@ export function GenerationPanelV2({
 
               {/* FPS - Only for video models */}
               {selectedModel?.type === "video" && (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs">FPS (Frames Per Second)</Label>
-                    <span className="text-muted-foreground text-xs">
+                    <Label className="text-[10px]">FPS (Frames Per Second)</Label>
+                    <span className="text-muted-foreground text-[10px]">
                       {fps[0]} fps
                     </span>
                   </div>
@@ -650,10 +652,10 @@ export function GenerationPanelV2({
               )}
 
               {/* Inference Steps */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">Inference Steps</Label>
-                  <span className="text-muted-foreground text-xs">
+                  <Label className="text-[10px]">Inference Steps</Label>
+                  <span className="text-muted-foreground text-[10px]">
                     {steps[0]}
                   </span>
                 </div>
@@ -665,16 +667,16 @@ export function GenerationPanelV2({
                   step={1}
                   value={steps}
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-[9px]">
                   More steps = better quality but slower generation
                 </p>
               </div>
 
               {/* Guidance Scale */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs">Guidance Scale</Label>
-                  <span className="text-muted-foreground text-xs">
+                  <Label className="text-[10px]">Guidance Scale</Label>
+                  <span className="text-muted-foreground text-[10px]">
                     {guidanceScale[0]}
                   </span>
                 </div>
@@ -686,15 +688,15 @@ export function GenerationPanelV2({
                   step={0.5}
                   value={guidanceScale}
                 />
-                <p className="text-muted-foreground text-xs">
+                <p className="text-muted-foreground text-[9px]">
                   Higher values = more adherence to prompt
                 </p>
               </div>
 
               {/* Seed */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs" htmlFor="random-seed">
+                  <Label className="text-[10px]" htmlFor="random-seed">
                     Random Seed
                   </Label>
                   <Switch
@@ -706,6 +708,7 @@ export function GenerationPanelV2({
                 </div>
                 {!randomSeed && (
                   <Input
+                    className="h-8 text-xs"
                     disabled={isGenerating}
                     onChange={(e) =>
                       setSeed(
@@ -724,15 +727,15 @@ export function GenerationPanelV2({
 
         {/* Validation Warning */}
         {!canGenerate && !isGenerating && (
-          <Card className="border-amber-500/20 bg-amber-500/5">
-            <CardContent className="px-4 pt-4 pb-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                <div className="space-y-1">
-                  <p className="font-medium text-amber-900 text-xs dark:text-amber-100">
+          <Card className="border-border bg-muted/50">
+            <CardContent className="px-2.5 pt-2.5 pb-2">
+              <div className="flex items-start gap-1.5">
+                <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="font-medium text-foreground text-[10px]">
                     Cannot Generate
                   </p>
-                  <p className="text-amber-700 text-xs dark:text-amber-300">
+                  <p className="text-muted-foreground text-[10px] leading-tight">
                     {!selectedModel && "Please select a model"}
                     {selectedModel &&
                       needsPrompt &&
@@ -750,19 +753,19 @@ export function GenerationPanelV2({
 
         {/* Generate Button */}
         <Button
-          className="h-12 w-full bg-gradient-to-r from-purple-600 to-pink-600 font-semibold text-base shadow-lg shadow-purple-500/25 transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-purple-500/40 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-9 w-full font-medium text-sm"
           disabled={!canGenerate || isGenerating}
           onClick={handleGenerate}
-          size="lg"
+          size="default"
         >
           {isGenerating ? (
             <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
               Generating...
             </>
           ) : (
             <>
-              <Sparkles className="mr-2 h-5 w-5" />
+              <Sparkles className="mr-1.5 h-4 w-4" />
               Generate
             </>
           )}

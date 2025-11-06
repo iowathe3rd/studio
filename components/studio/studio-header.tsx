@@ -23,15 +23,15 @@ function PureStudioHeader({
   const { width: windowWidth } = useWindowSize();
 
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-3 border-border/40 border-b bg-background/95 px-3 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-4">
+    <header className="sticky top-0 z-10 flex items-center gap-2 border-border/40 border-b bg-background/95 px-2 py-1.5 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-3">
       <SidebarToggle />
 
       {/* Title with icon */}
-      <div className="flex items-center gap-2">
-        <div className="hidden items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-1.5 sm:flex">
-          <Sparkles className="h-4 w-4 text-purple-600" strokeWidth={2} />
+      <div className="flex items-center gap-1.5">
+        <div className="hidden items-center justify-center rounded-md bg-muted p-1 sm:flex">
+          <Sparkles className="h-3.5 w-3.5 text-foreground/60" strokeWidth={2} />
         </div>
-        <h1 className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text font-bold text-lg text-transparent tracking-tight md:text-xl">
+        <h1 className="font-semibold text-foreground text-sm tracking-tight md:text-base">
           {title}
         </h1>
       </div>
@@ -39,14 +39,15 @@ function PureStudioHeader({
       {/* New Project Button */}
       {showNewButton && (!open || windowWidth < 768) && (
         <Button
-          className="ml-auto h-9 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 shadow-sm hover:from-purple-700 hover:to-pink-700"
+          className="ml-auto h-7 gap-1.5"
           onClick={() => {
             router.push("/studio/new");
           }}
           size="sm"
+          variant="default"
         >
           <PlusIcon />
-          <span className="hidden sm:inline">New Project</span>
+          <span className="hidden text-xs sm:inline">New Project</span>
         </Button>
       )}
     </header>
