@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { memo } from "react";
-import { useWindowSize } from "usehooks-ts";
 import { SidebarToggle } from "@/components/sidebar-toggle";
 import { Button } from "@/components/ui/button";
 import type { ChatModelId } from "@/lib/ai/models";
 import type { ModelProviderId } from "@/lib/ai/providers";
+import { useRouter } from "next/navigation";
+import { memo } from "react";
+import { useWindowSize } from "usehooks-ts";
 import { PlusIcon } from "./icons";
 import { ModelSelectorHeader } from "./model-selector-header";
 import { useSidebar } from "./ui/sidebar";
@@ -38,20 +38,9 @@ function PureChatHeader({
     <header className="sticky top-0 flex items-center gap-2 bg-background px-2 py-1.5 md:px-2">
       <SidebarToggle />
 
-      {/* Model Selector - как в ChatGPT */}
-      {!isReadonly && selectedModelId && (
-        <ModelSelectorHeader
-          className="order-1"
-          onModelChange={onModelChange}
-          onProviderChange={onProviderChange}
-          selectedModelId={selectedModelId}
-          selectedProviderId={selectedProviderId}
-        />
-      )}
-
       {(!open || windowWidth < 768) && (
         <Button
-          className="order-2 ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
+          className="ml-auto h-8 px-2 md:order-1 md:ml-0 md:h-fit md:px-2"
           onClick={() => {
             router.push("/");
             router.refresh();
@@ -66,10 +55,21 @@ function PureChatHeader({
       {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
-          className="order-3 md:order-2"
+          className="md:order-2"
           selectedVisibilityType={selectedVisibilityType}
         />
       )}
+
+      {/* Model Selector - как в ChatGPT */}
+      {!isReadonly && selectedModelId && (
+        <ModelSelectorHeader
+          onModelChange={onModelChange}
+          onProviderChange={onProviderChange}
+          selectedModelId={selectedModelId}
+          selectedProviderId={selectedProviderId}
+        />
+      )}
+
     </header>
   );
 }

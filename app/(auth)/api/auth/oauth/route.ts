@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const provider = searchParams.get("provider");
   const redirectTo = searchParams.get("redirectTo") || "/";
 
-  if (!provider || !["github", "google", "gitlab"].includes(provider)) {
+  if (!provider || !(["github", "google", "gitlab"] as const).includes(provider as any)) {
     return NextResponse.json(
       { error: "Invalid OAuth provider" },
       { status: 400 }
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     },
   });
 
-  if (error) {
+  if (error || !data.url) {
     console.error("OAuth sign in error:", error);
     return NextResponse.json(
       { error: "Failed to initialize OAuth" },
@@ -46,5 +46,5 @@ export async function GET(request: Request) {
     );
   }
 
-  return NextResponse.redirect(data.url);
+  return NextResponse.redirect(data.url as string);
 }

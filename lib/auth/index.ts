@@ -61,7 +61,9 @@ export async function requirePermanentUser() {
     redirect("/login");
   }
   
-  if (user.is_anonymous) {
+  // TypeScript doesn't understand that redirect() never returns
+  // so we need to check again or use type assertion
+  if (user && user.is_anonymous) {
     redirect("/register?fromGuest=true");
   }
   
