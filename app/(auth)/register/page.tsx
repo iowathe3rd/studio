@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
@@ -10,9 +10,14 @@ import { type RegisterActionState, register } from "../actions";
 
 export default function Page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
+  
+  // Check if user is coming from guest mode
+  const fromGuest = searchParams.get("fromGuest") === "true";
+  const redirectTo = searchParams.get("redirectTo") || "/";
 
   const [state, formAction] = useActionState<RegisterActionState, FormData>(
     register,
@@ -51,7 +56,9 @@ export default function Page() {
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
           <h3 className="font-semibold text-xl dark:text-zinc-50">Sign Up</h3>
           <p className="text-gray-500 text-sm dark:text-zinc-400">
-            Create an account with your email and password
+            {fromGuest 
+              ? "Upgrade your guest account to save your work and unlock all features"
+              : "Create an account with your email and password"}
           </p>
         </div>
         <AuthForm action={handleSubmit} defaultEmail={email}>

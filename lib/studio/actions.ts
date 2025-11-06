@@ -24,17 +24,13 @@ import {
   updateProject,
 } from "./queries";
 
-// Helper to get current authenticated user
+// Helper to get current authenticated user (requires permanent account)
 async function getCurrentUser() {
   // Use secure server helper which calls `supabase.auth.getUser()` under the hood
   // (this verifies the session with the Supabase Auth server) instead of
   // directly reading the session from cookies which can be insecure.
-  const { getUser } = await import("@/lib/supabase/server");
-  const user = await getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const { requirePermanentUser } = await import("@/lib/auth");
+  const user = await requirePermanentUser();
 
   return user;
 }

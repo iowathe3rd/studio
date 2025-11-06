@@ -50,14 +50,21 @@ export async function requireAuth() {
 }
 
 /**
- * Require non-anonymous user or throw error
- * @throws Error if user is anonymous or not authenticated
+ * Require non-anonymous user or redirect to register
+ * Redirects to /register if user is anonymous or not authenticated
  */
 export async function requirePermanentUser() {
-  const user = await requireAuth();
-  if (user.is_anonymous) {
-    throw new Error("Permanent account required");
+  const { redirect } = await import("next/navigation");
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    redirect("/login");
   }
+  
+  if (user.is_anonymous) {
+    redirect("/register?fromGuest=true");
+  }
+  
   return user;
 }
 

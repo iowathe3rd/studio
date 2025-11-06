@@ -32,6 +32,8 @@ export function AppSidebar({
   const { setOpenMobile, open, setOpen } = useSidebar();
   const [searchQuery, setSearchQuery] = React.useState("");
 
+  const isGuest = user?.is_anonymous === true;
+
   const teams = [
     {
       name: "Чат",
@@ -39,12 +41,13 @@ export function AppSidebar({
       plan: "Рабочая область",
       url: "/",
     },
-    {
+    // Hide Studio for guest users
+    ...(!isGuest ? [{
       name: "Студия",
       logo: Video,
       plan: "Рабочая область",
       url: "/studio",
-    },
+    }] : []),
   ];
 
   const modelsNav = chatModels.map((model) => ({

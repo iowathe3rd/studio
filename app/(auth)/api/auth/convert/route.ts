@@ -7,6 +7,24 @@ const convertSchema = z.object({
   password: z.string().min(6),
 });
 
+/**
+ * GET /api/auth/convert - Redirect to register page with optional redirectTo
+ */
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const redirectTo = searchParams.get("redirectTo") || "/";
+  
+  // Redirect to register page with message
+  const registerUrl = new URL("/register", request.url);
+  registerUrl.searchParams.set("redirectTo", redirectTo);
+  registerUrl.searchParams.set("fromGuest", "true");
+  
+  return NextResponse.redirect(registerUrl);
+}
+
+/**
+ * POST /api/auth/convert - Convert anonymous user to permanent account
+ */
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
 
