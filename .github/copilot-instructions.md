@@ -62,9 +62,13 @@ This is a Next.js 15 AI chatbot with RunwayML-style Studio for image/video gener
 - Always export both loading and final component variants
 
 ### 5. Studio (Image/Video Generation)
-- Uses fal.ai queue API (submit → poll status → result)
-- Models mapped in `lib/studio/model-mapping.ts`; fal client in `lib/studio/fal-client.ts`
-- **Never expose `FAL_API_KEY` to client**; all calls in server actions (`lib/studio/actions.ts`)
+- Uses official **@fal-ai/client** SDK (v1.7.2) with 3-layer architecture:
+  1. **SDK Layer** (`lib/studio/fal/client.ts`) - Wraps fal.ai SDK with FalClient class
+  2. **Domain Layer** (`lib/studio/service.ts`) - StudioService bridges Studio concepts to fal.ai
+  3. **Actions Layer** (`lib/studio/actions.ts`) - Next.js Server Actions
+- Models mapped in `lib/studio/model-mapping.ts`; Studio model IDs **are** fal.ai model IDs (e.g., `fal-ai/flux/schnell`)
+- **Never expose `FAL_API_KEY` to client**; all calls in server actions
+- SDK supports: `fal.subscribe()` (polling with progress), `fal.queue.submit()` (async), `fal.storage.upload()` (file uploads)
 - UI components: `GenerationPanel`, `ModelSelectorDialog`, `GenerationHistory`, `AssetGallery`
 - Database tables: `studio_projects`, `studio_generations`, `studio_assets`
 
@@ -165,7 +169,10 @@ import type { Chat } from "@/lib/supabase/models";
 | `lib/ai/prompts.ts` | System prompts and context |
 | `lib/supabase/server.ts` | Server-side Supabase client factory |
 | `lib/db/queries.ts` | All database operations |
-| `lib/studio/actions.ts` | Studio server actions (fal.ai) |
+| `lib/studio/actions.ts` | Studio server actions (generateAction, cancelGenerationAction, retryGenerationAction) |
+| `lib/studio/fal/client.ts` | FalClient wrapper around @fal-ai/client SDK |
+| `lib/studio/fal/types.ts` | Type definitions for fal.ai integration |
+| `lib/studio/service.ts` | StudioService domain layer |
 | `components/chat.tsx` | Main chat UI with streaming |
 | `components/artifact.tsx` | Document editor (code, text, sheets) |
 | `DESIGN_SYSTEM.md` | UI design tokens and specs |

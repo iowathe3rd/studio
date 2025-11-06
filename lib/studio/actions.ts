@@ -1,13 +1,9 @@
 "use server";
 
 import { ChatSDKError } from "@/lib/errors";
-import { getFalClient } from "@/lib/studio/fal-client";
 import { getModelById } from "@/lib/studio/model-mapping";
-import type {
-  FalGenerationInput,
-  GenerationRequest,
-  GenerationResponse,
-} from "@/lib/studio/types";
+import { getStudioService } from "@/lib/studio/service";
+import type { GenerationRequest, GenerationResponse } from "@/lib/studio/types";
 import { redirect } from "next/navigation";
 import {
   createAsset,
@@ -334,6 +330,113 @@ export async function generateAction(
 }
 
 /**
+ * Cancel generation
+ */
+export async function cancelGenerationAction(generationId: string) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  try {
+    const generations = await getGenerationsByUserId(user.id);
+    const generation = generations.find((g) => g.id === generationId);
+
+    if (!generation) {
+      throw new ChatSDKError("not_found:studio_generation");
+    }
+
+    if (generation.userId !== user.id) {
+      throw new ChatSDKError("forbidden:studio_generation");
+    }
+
+    // Can only cancel pending or processing generations
+    if (generation.status !== "pending" && generation.status !== "processing") {
+      throw new ChatSDKError(
+        "bad_request:studio_generation",
+        "Generation cannot be cancelled in current state",
+      );
+    }
+
+    // Cancel in fal.ai if we have request_id
+    if (generation.falRequestId) {
+      const service = getStudioService();
+      try {
+        await service.cancelGeneration(
+          generation.modelId,
+          generation.falRequestId,
+        );
+      } catch (error: any) {
+        console.error("Failed to cancel in fal.ai:", error);
+        // Continue to update DB even if fal.ai cancel fails
+      }
+    }
+
+    // Update DB status
+    await updateGeneration(generationId, {
+      status: "cancelled",
+      error: "Cancelled by user",
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:studio_generation", error.message);
+  }
+}
+
+/**
+ * Retry failed generation
+ */
+export async function retryGenerationAction(generationId: string) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  try {
+    const generations = await getGenerationsByUserId(user.id);
+    const generation = generations.find((g) => g.id === generationId);
+
+    if (!generation) {
+      throw new ChatSDKError("not_found:studio_generation");
+    }
+
+    if (generation.userId !== user.id) {
+      throw new ChatSDKError("forbidden:studio_generation");
+    }
+
+    // Can only retry failed generations
+    if (generation.status !== "failed") {
+      throw new ChatSDKError(
+        "bad_request:studio_generation",
+        "Only failed generations can be retried",
+      );
+    }
+
+    // Create new generation with same parameters
+    const request: GenerationRequest = {
+      modelId: generation.modelId,
+      projectId: generation.projectId || undefined,
+      generationType: generation.generationType,
+      prompt: generation.prompt || undefined,
+      negativePrompt: generation.negativePrompt || undefined,
+      referenceImageUrl: generation.referenceImageUrl || undefined,
+      firstFrameUrl: generation.firstFrameUrl || undefined,
+      lastFrameUrl: generation.lastFrameUrl || undefined,
+      referenceVideoUrl: generation.referenceVideoUrl || undefined,
+      inputAssetId: generation.inputAssetId || undefined,
+      parameters: generation.parameters as any,
+    };
+
+    return await generateAction(request);
+  } catch (error: any) {
+    if (error instanceof ChatSDKError) {
+      throw error;
+    }
+    throw new ChatSDKError("bad_request:studio_generation", error.message);
+  }
+}
+
+/**
  * Фоновая обработка генерации
  */
 async function processGeneration(
@@ -344,28 +447,20 @@ async function processGeneration(
     // Обновляем статус
     await updateGeneration(generationId, { status: "processing" });
 
-    const falClient = getFalClient();
+    const service = getStudioService();
 
-    // Подготавливаем input для fal.ai
-    const input: FalGenerationInput = {
-      prompt: request.prompt || "",
-      negative_prompt: request.negativePrompt,
-      image_url: request.referenceImageUrl,
-      first_frame_image_url: request.firstFrameUrl,
-      last_frame_image_url: request.lastFrameUrl,
-      video_url: request.referenceVideoUrl,
-      ...request.parameters,
-    };
-
-    // Запускаем генерацию
+    // Запускаем генерацию через новый StudioService
     const startTime = Date.now();
     let result: any;
 
     try {
-      result = await falClient.run(request.modelId, input, {
+      result = await service.runGeneration(request, {
         onProgress: (status) => {
           console.log(`Generation ${generationId} status:`, status.status);
         },
+        pollInterval: 2000,
+        timeout: 600_000, // 10 minutes
+        logs: true,
       });
     } catch (falError: any) {
       // Обрабатываем специфичные ошибки fal.ai
