@@ -11,15 +11,13 @@ import { DocumentToolResult } from "./document";
 import { DocumentPreview } from "./document-preview";
 import { MessageContent } from "./elements/message";
 import { Response } from "./elements/response";
-import { FlightCard, FlightCardLoading } from "./generative-ui/flight-card";
-import { ProductCard, ProductCardLoading } from "./generative-ui/product-card";
-import { StockPrice, StockPriceLoading } from "./generative-ui/stock-price";
 import { SparklesIcon } from "./icons";
+import { Loader2, Search } from "lucide-react";
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
 import { PreviewAttachment } from "./preview-attachment";
 import { ReasoningTrace } from "./reasoning-trace";
-import { WeatherAccordion } from "./weather-accordion";
+import { Weather } from "./weather";
 import { WebSearchResult } from "./web-search-result";
 
 const PurePreviewMessage = ({
@@ -215,20 +213,7 @@ const PurePreviewMessage = ({
               }
             }
 
-            if (type === "tool-getWeather") {
-              const { toolCallId, state } = part;
 
-              // Only show output in accordion, process is shown in ReasoningTrace
-              if (state === "output-available") {
-                return (
-                  <WeatherAccordion
-                    key={toolCallId}
-                    weatherAtLocation={part.output}
-                  />
-                );
-              }
-              return null;
-            }
 
             if (type === "tool-webSearch") {
               const { toolCallId, state } = part;
@@ -326,28 +311,138 @@ const PurePreviewMessage = ({
               return null;
             }
 
-            // Handle generative UI tools - these return React components directly
-            if (
-              type === "tool-getStockPriceUI" ||
-              type === "tool-searchFlightsUI" ||
-              type === "tool-searchProductsUI" ||
-              type === "tool-getWeatherUI" ||
-              type === "tool-webSearchUI"
-            ) {
+            // Handle tool parts - check using startsWith to support dynamic tool types
+            if (typeof type === "string" && type.startsWith("tool-")) {
+              const toolName = type.replace("tool-", "");
+              
+              // @ts-expect-error - TypeScript can't narrow union types properly here
               const { toolCallId, state } = part;
 
-              // The component is in part.output for UI tools
-              if (state === "output-available" && part.output) {
-                return <div key={toolCallId}>{part.output}</div>;
+              // Handle getWeather tool
+              if (toolName === "getWeather") {
+                if (state === "input-available") {
+                  return (
+                    <div
+                      className="relative flex w-full flex-col gap-4 rounded-3xl bg-gradient-to-br from-sky-400 via-blue-500 to-blue-600 p-6 shadow-lg"
+                      key={toolCallId}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 animate-pulse rounded-full bg-white/30" />
+                        <div className="flex-1">
+                          <div className="mb-2 h-6 w-32 animate-pulse rounded bg-white/30" />
+                          <div className="h-4 w-48 animate-pulse rounded bg-white/20" />
+                        </div>
+                      </div>
+                      <div className="h-24 animate-pulse rounded-xl bg-white/20" />
+                      <p className="text-center text-sm text-white/80">
+                        Loading weather...
+                      </p>
+                    </div>
+                  );
+                }
+
+                if (state === "output-available") {
+                  // @ts-expect-error - TypeScript can't narrow union types properly here
+                  const output = part.output;
+                  
+                  if ("error" in output) {
+                    return (
+                      <div
+                        className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400"
+                        key={toolCallId}
+                      >
+                        {output.error}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="relative" key={toolCallId}>
+                      <Weather weatherAtLocation={output} />
+                    </div>
+                  );
+                }
+
+                if (state === "output-error") {
+                  return (
+                    <div
+                      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                      key={toolCallId}
+                    >
+                      Error fetching weather data
+                    </div>
+                  );
+                }
+
+                return null;
+              }
+
+              // Handle webSearch tool
+              if (toolName === "webSearch") {
+                if (state === "input-available") {
+                  return (
+                    <div
+                      className="flex w-full flex-col gap-3 rounded-xl border border-border bg-muted/30 p-4"
+                      key={toolCallId}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <div className="flex items-center gap-2 font-medium text-foreground text-sm">
+                          <Search className="h-4 w-4" />
+                          Searching the web...
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (state === "output-available") {
+                  // @ts-expect-error - TypeScript can't narrow union types properly here
+                  const output = part.output;
+                  
+                  return (
+                    <div className="relative" key={toolCallId}>
+                      <WebSearchResult output={output} />
+                    </div>
+                  );
+                }
+
+                if (state === "output-error") {
+                  return (
+                    <div
+                      className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                      key={toolCallId}
+                    >
+                      Error performing web search
+                    </div>
+                  );
+                }
+
+                return null;
+              }
+
+              // Unknown tool - show generic loading/error states
+              if (state === "input-available") {
+                return (
+                  <div
+                    className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-3"
+                    key={toolCallId}
+                  >
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-muted-foreground text-sm">
+                      Processing {toolName}...
+                    </span>
+                  </div>
+                );
               }
 
               if (state === "output-error") {
                 return (
                   <div
-                    className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-500 dark:bg-red-950/50"
+                    className="rounded-lg border border-red-200 bg-red-50 p-3 text-red-500 dark:bg-red-950/50"
                     key={toolCallId}
                   >
-                    Error: {part.errorText || "Something went wrong"}
+                    Error executing {toolName}
                   </div>
                 );
               }

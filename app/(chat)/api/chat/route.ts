@@ -24,18 +24,10 @@ import type { ChatModelId } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
-import { getStockPrice } from "@/lib/ai/tools/get-stock-price";
-import { getStockPriceUI } from "@/lib/ai/tools/get-stock-price-ui";
 import { getWeather } from "@/lib/ai/tools/get-weather";
-import { getWeatherUI } from "@/lib/ai/tools/get-weather-ui";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
-import { searchFlights } from "@/lib/ai/tools/search-flights";
-import { searchFlightsUI } from "@/lib/ai/tools/search-flights-ui";
-import { searchProducts } from "@/lib/ai/tools/search-products";
-import { searchProductsUI } from "@/lib/ai/tools/search-products-ui";
 import { updateDocument } from "@/lib/ai/tools/update-document";
 import { webSearch } from "@/lib/ai/tools/web-search";
-import { webSearchUI } from "@/lib/ai/tools/web-search-ui";
 import { isProductionEnvironment } from "@/lib/constants";
 import {
   createStreamId,
@@ -217,28 +209,22 @@ export async function POST(request: Request) {
             selectedChatModel === "chat-model-reasoning"
               ? []
               : [
-                  "getWeatherUI",
-                  "webSearchUI",
+                  "getWeather",
+                  "webSearch",
                   "createDocument",
                   "updateDocument",
                   "requestSuggestions",
-                  "getStockPriceUI",
-                  "searchFlightsUI",
-                  "searchProductsUI",
                 ],
           experimental_transform: smoothStream({ chunking: "word" }),
           tools: {
-            getWeatherUI,
-            webSearchUI,
+            getWeather,
+            webSearch,
             createDocument: createDocument({ user, dataStream }),
             updateDocument: updateDocument({ user, dataStream }),
             requestSuggestions: requestSuggestions({
               user,
               dataStream,
             }),
-            getStockPriceUI,
-            searchFlightsUI,
-            searchProductsUI,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
