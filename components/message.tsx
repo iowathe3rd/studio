@@ -15,8 +15,8 @@ import { SparklesIcon } from "./icons";
 import { Loader2, Search } from "lucide-react";
 import { MessageActions } from "./message-actions";
 import { MessageEditor } from "./message-editor";
+import { MessageReasoning } from "./message-reasoning";
 import { PreviewAttachment } from "./preview-attachment";
-import { ReasoningTrace } from "./reasoning-trace";
 import { Weather } from "./weather";
 import { WebSearchResult } from "./web-search-result";
 
@@ -46,59 +46,6 @@ const PurePreviewMessage = ({
   );
 
   useDataStream();
-
-  // Collect reasoning and tool calls into a trace
-  const reasoningSteps = useMemo(() => {
-    if (message.role !== "assistant") return [];
-
-    const steps: Array<{
-      type: "reasoning" | "tool";
-      title: string;
-      content?: string;
-      toolType?: string;
-      state?: string;
-      isStreaming?: boolean;
-    }> = [];
-
-    message.parts.forEach((part) => {
-      if (part.type === "reasoning" && part.text?.trim()) {
-        steps.push({
-          type: "reasoning",
-          title: "Analyzing your request",
-          content: part.text,
-          isStreaming: isLoading,
-        });
-      } else if (part.type.startsWith("tool-")) {
-        const toolLabels: Record<string, string> = {
-          "tool-webSearch": "Searching the web",
-          "tool-getWeather": "Getting weather data",
-          "tool-createDocument": "Creating document",
-          "tool-updateDocument": "Updating document",
-          "tool-requestSuggestions": "Getting suggestions",
-          "tool-getStockPrice": "Fetching stock price",
-          "tool-searchFlights": "Searching flights",
-          "tool-searchProducts": "Searching products",
-          "tool-getStockPriceUI": "Fetching stock price",
-          "tool-searchFlightsUI": "Searching flights",
-          "tool-searchProductsUI": "Searching products",
-          "tool-getWeatherUI": "Getting weather data",
-          "tool-webSearchUI": "Searching the web",
-        };
-
-        const state = "state" in part ? part.state : undefined;
-
-        steps.push({
-          type: "tool",
-          title: toolLabels[part.type] || part.type,
-          toolType: part.type,
-          state,
-          isStreaming: isLoading && state !== "output-available",
-        });
-      }
-    });
-
-    return steps;
-  }, [message.parts, message.role, isLoading]);
 
   return (
     <motion.div
@@ -136,11 +83,6 @@ const PurePreviewMessage = ({
               message.role === "user" && mode !== "edit",
           })}
         >
-          {/* Show reasoning trace for assistant messages */}
-          {message.role === "assistant" && reasoningSteps.length > 0 && (
-            <ReasoningTrace isStreaming={isLoading} steps={reasoningSteps} />
-          )}
-
           {attachmentsFromMessage.length > 0 && (
             <div
               className="flex flex-row justify-end gap-2"
@@ -163,9 +105,15 @@ const PurePreviewMessage = ({
             const { type } = part;
             const key = `message-${message.id}-part-${index}`;
 
-            // Skip reasoning - it's shown in ReasoningTrace
-            if (type === "reasoning") {
-              return null;
+            // Handle reasoning parts
+            if (type === "reasoning" && part.text?.trim().length > 0) {
+              return (
+                <MessageReasoning
+                  isLoading={isLoading}
+                  key={key}
+                  reasoning={part.text}
+                />
+              );
             }
 
             if (type === "text") {
@@ -225,7 +173,7 @@ const PurePreviewMessage = ({
                   ? (part.output as any).value
                   : part.output;
 
-              // Only show output in accordion, process is shown in ReasoningTrace
+              // Show output in accordion
               if (state === "output-available") {
                 return <WebSearchResult key={toolCallId} output={outputData} />;
               }
@@ -283,7 +231,7 @@ const PurePreviewMessage = ({
             if (type === "tool-requestSuggestions") {
               const { toolCallId, state } = part;
 
-              // Only show output, process is shown in ReasoningTrace
+              // Show output
               if (state === "output-available") {
                 return (
                   <div className="my-2" key={toolCallId}>
