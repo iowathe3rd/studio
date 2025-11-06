@@ -4,21 +4,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    cancelGenerationAction,
+    retryGenerationAction,
+} from "@/lib/studio/actions";
 import type { StudioGeneration } from "@/lib/studio/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
-  CheckCircle2,
-  Clock,
-  Download,
-  ExternalLink,
-  Image as ImageIcon,
-  Loader2,
-  Sparkles,
-  Video,
-  XCircle,
+    CheckCircle2,
+    Clock,
+    Download,
+    ExternalLink,
+    Image as ImageIcon,
+    Loader2,
+    RefreshCw,
+    Sparkles,
+    Video,
+    XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface GenerationHistoryProps {
   generations: StudioGeneration[];
@@ -68,6 +74,47 @@ export function GenerationHistory({
   onRefresh,
 }: GenerationHistoryProps) {
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [actioningIds, setActioningIds] = useState<Set<string>>(new Set());
+
+  // Handle cancel generation
+  const handleCancel = async (generationId: string) => {
+    try {
+      setActioningIds((prev) => new Set(prev).add(generationId));
+      await cancelGenerationAction(generationId);
+      toast.success("Generation cancelled");
+      onRefresh?.();
+    } catch (error: any) {
+      toast.error("Failed to cancel", {
+        description: error.message,
+      });
+    } finally {
+      setActioningIds((prev) => {
+        const next = new Set(prev);
+        next.delete(generationId);
+        return next;
+      });
+    }
+  };
+
+  // Handle retry generation
+  const handleRetry = async (generationId: string) => {
+    try {
+      setActioningIds((prev) => new Set(prev).add(generationId));
+      const result = await retryGenerationAction(generationId);
+      toast.success("Retrying generation");
+      onRefresh?.();
+    } catch (error: any) {
+      toast.error("Failed to retry", {
+        description: error.message,
+      });
+    } finally {
+      setActioningIds((prev) => {
+        const next = new Set(prev);
+        next.delete(generationId);
+        return next;
+      });
+    }
+  };
 
   // Auto-refresh when there are pending/processing generations
   useEffect(() => {
@@ -219,19 +266,67 @@ export function GenerationHistory({
                       )}
 
                       {/* Actions */}
-                      {generation.status === "completed" &&
-                        generation.outputAssetId && (
-                          <div className="flex items-center gap-1.5 pt-0.5">
-                            <Button className="h-6 text-xs" size="sm" variant="outline">
-                              <ExternalLink className="mr-1 h-2.5 w-2.5" />
-                              View
-                            </Button>
-                            <Button className="h-6 text-xs" size="sm" variant="outline">
-                              <Download className="mr-1 h-2.5 w-2.5" />
-                              Download
-                            </Button>
-                          </div>
+                      <div className="flex items-center gap-1.5 pt-0.5">
+                        {/* Completed - View & Download */}
+                        {generation.status === "completed" &&
+                          generation.outputAssetId && (
+                            <>
+                              <Button
+                                className="h-6 text-xs"
+                                size="sm"
+                                variant="outline"
+                              >
+                                <ExternalLink className="mr-1 h-2.5 w-2.5" />
+                                View
+                              </Button>
+                              <Button
+                                className="h-6 text-xs"
+                                size="sm"
+                                variant="outline"
+                              >
+                                <Download className="mr-1 h-2.5 w-2.5" />
+                                Download
+                              </Button>
+                            </>
+                          )}
+
+                        {/* Processing/Pending - Cancel */}
+                        {(generation.status === "processing" ||
+                          generation.status === "pending") && (
+                          <Button
+                            className="h-6 text-xs"
+                            disabled={actioningIds.has(generation.id)}
+                            onClick={() => handleCancel(generation.id)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            {actioningIds.has(generation.id) ? (
+                              <Loader2 className="mr-1 h-2.5 w-2.5 animate-spin" />
+                            ) : (
+                              <XCircle className="mr-1 h-2.5 w-2.5" />
+                            )}
+                            Cancel
+                          </Button>
                         )}
+
+                        {/* Failed - Retry */}
+                        {generation.status === "failed" && (
+                          <Button
+                            className="h-6 text-xs"
+                            disabled={actioningIds.has(generation.id)}
+                            onClick={() => handleRetry(generation.id)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            {actioningIds.has(generation.id) ? (
+                              <Loader2 className="mr-1 h-2.5 w-2.5 animate-spin" />
+                            ) : (
+                              <RefreshCw className="mr-1 h-2.5 w-2.5" />
+                            )}
+                            Retry
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

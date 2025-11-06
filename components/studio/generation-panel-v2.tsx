@@ -27,6 +27,7 @@ import type {
 } from "@/lib/ai/studio-models";
 import { generateAction } from "@/lib/studio/actions";
 import { showStudioError, showStudioSuccess } from "@/lib/studio/error-handler";
+import { getFalClient } from "@/lib/studio/fal";
 import { getRecommendedModels } from "@/lib/studio/model-mapping";
 import type { ProjectTemplate, PromptTemplate } from "@/lib/studio/templates";
 import type { StudioGenerationType } from "@/lib/studio/types";
@@ -255,20 +256,33 @@ export function GenerationPanelV2({
     setIsGenerating(true);
 
     try {
+      // Upload reference files to fal.ai storage
+      const uploadedUrls: Record<string, string | undefined> = {};
+
+      for (const [key, file] of Object.entries(referenceInputs)) {
+        if (file instanceof File) {
+          toast.loading(`Uploading ${key.replace("-", " ")}...`, {
+            id: `upload-${key}`,
+          });
+          const client = getFalClient();
+          const url = await client.uploadFile(file);
+          uploadedUrls[key] = url;
+          toast.success(`Uploaded ${key.replace("-", " ")}`, {
+            id: `upload-${key}`,
+          });
+        }
+      }
+
       const response = await generateAction({
         modelId: selectedModel.id,
         projectId,
         generationType,
         prompt: prompt || undefined,
         negativePrompt: negativePrompt || undefined,
-        referenceImageUrl: referenceInputs["reference-image"]
-          ? undefined
-          : undefined, // Will be handled by upload
-        firstFrameUrl: referenceInputs["first-frame"] ? undefined : undefined,
-        lastFrameUrl: referenceInputs["last-frame"] ? undefined : undefined,
-        referenceVideoUrl: referenceInputs["reference-video"]
-          ? undefined
-          : undefined,
+        referenceImageUrl: uploadedUrls["reference-image"],
+        firstFrameUrl: uploadedUrls["first-frame"],
+        lastFrameUrl: uploadedUrls["last-frame"],
+        referenceVideoUrl: uploadedUrls["reference-video"],
         parameters: {
           imageSize: selectedModel.type === "image" ? imageSize : undefined,
           numInferenceSteps: steps[0],
