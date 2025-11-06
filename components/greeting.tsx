@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export const Greeting = ({ userName }: { userName?: string }) => {
   const firstName = userName ? userName.split(" ")[0] : "there";
-  
+
   return (
     <div
       className="mx-auto mt-8 flex size-full max-w-3xl flex-col justify-start px-4 md:mt-20 md:px-8"
@@ -10,7 +10,7 @@ export const Greeting = ({ userName }: { userName?: string }) => {
     >
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="font-semibold text-3xl md:text-4xl mb-2"
+        className="mb-2 font-semibold text-3xl md:text-4xl"
         exit={{ opacity: 0, y: 10 }}
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.3 }}
@@ -28,7 +28,7 @@ export const Greeting = ({ userName }: { userName?: string }) => {
       </motion.div>
       <motion.div
         animate={{ opacity: 1, y: 0 }}
-        className="text-sm text-muted-foreground mt-4"
+        className="mt-4 text-muted-foreground text-sm"
         exit={{ opacity: 0, y: 10 }}
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}

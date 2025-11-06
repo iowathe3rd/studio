@@ -1,22 +1,22 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
 import type { ToolUIPart } from "ai";
 import {
-    CheckCircleIcon,
-    ChevronDownIcon,
-    CircleIcon,
-    ClockIcon,
-    WrenchIcon,
-    XCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  CircleIcon,
+  ClockIcon,
+  WrenchIcon,
+  XCircleIcon,
 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 import { CodeBlock } from "./code-block";
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
@@ -42,8 +42,14 @@ const getToolLabel = (type: ToolUIPart["type"]): string => {
     "tool-updateDocument": "Update Document",
     "tool-requestSuggestions": "Request Suggestions",
   };
-  
-  return labels[type] || type.replace("tool-", "").replace(/([A-Z])/g, " $1").trim();
+
+  return (
+    labels[type] ||
+    type
+      .replace("tool-", "")
+      .replace(/([A-Z])/g, " $1")
+      .trim()
+  );
 };
 
 const getStatusBadge = (status: ToolUIPart["state"]) => {

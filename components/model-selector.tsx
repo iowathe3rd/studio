@@ -1,6 +1,11 @@
 "use client";
 
-import { saveChatModelAsCookie, saveProviderAsCookie } from "@/app/(chat)/actions";
+import type { Session } from "@supabase/supabase-js";
+import { startTransition, useMemo, useOptimistic, useState } from "react";
+import {
+  saveChatModelAsCookie,
+  saveProviderAsCookie,
+} from "@/app/(chat)/actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,15 +15,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { entitlementsByUserType } from "@/lib/ai/entitlements";
-import { chatModels, type ChatModelId } from "@/lib/ai/models";
+import { type ChatModelId, chatModels } from "@/lib/ai/models";
 import {
   getConfiguredProviders,
   getProviderDisplayName,
   type ModelProviderId,
 } from "@/lib/ai/providers";
 import { cn } from "@/lib/utils";
-import type { Session } from "@supabase/supabase-js";
-import { startTransition, useMemo, useOptimistic, useState } from "react";
 import { CheckCircleFillIcon, ChevronDownIcon } from "./icons";
 
 export function ModelSelector({
@@ -37,7 +40,9 @@ export function ModelSelector({
   const [optimisticProviderId, setOptimisticProviderId] =
     useOptimistic<ModelProviderId>(selectedProviderId);
 
-  const userType: "guest" | "regular" = session.user.is_anonymous ? "guest" : "regular";
+  const userType: "guest" | "regular" = session.user.is_anonymous
+    ? "guest"
+    : "regular";
   const { availableChatModelIds } = entitlementsByUserType[userType];
 
   const availableChatModels = chatModels.filter((chatModel) =>
@@ -74,7 +79,9 @@ export function ModelSelector({
         id: "thinking",
         label: "Thinking",
         description: "Думает дольше, чтобы получить лучшие ответы",
-        models: availableChatModels.filter((m) => m.id === "chat-model-reasoning"),
+        models: availableChatModels.filter(
+          (m) => m.id === "chat-model-reasoning"
+        ),
       },
     ].filter((cat) => cat.models.length > 0);
   }, [availableChatModels]);
@@ -97,20 +104,22 @@ export function ModelSelector({
             <span className="font-medium">
               {getProviderDisplayName(optimisticProviderId).split(" ")[0]}
             </span>
-            <span className="text-muted-foreground">{selectedChatModel?.name}</span>
+            <span className="text-muted-foreground">
+              {selectedChatModel?.name}
+            </span>
           </span>
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="min-w-[320px] max-w-[90vw] sm:min-w-[340px] p-0"
+        className="min-w-[320px] max-w-[90vw] p-0 sm:min-w-[340px]"
       >
         {showProviderSelector ? (
           <div className="w-full">
             {/* Tabs для провайдеров */}
             <Tabs
-              value={optimisticProviderId}
+              className="w-full"
               onValueChange={(value) => {
                 const providerId = value as ModelProviderId;
                 startTransition(() => {
@@ -118,15 +127,15 @@ export function ModelSelector({
                   saveProviderAsCookie(providerId);
                 });
               }}
-              className="w-full"
+              value={optimisticProviderId}
             >
-              <TabsList className="w-full grid grid-cols-2 rounded-none border-b h-10">
+              <TabsList className="grid h-10 w-full grid-cols-2 rounded-none border-b">
                 {configuredProviders.map((providerId) => (
                   <TabsTrigger
+                    className="rounded-none data-[state=active]:border-primary data-[state=active]:border-b-2"
+                    data-testid={`provider-tab-${providerId}`}
                     key={providerId}
                     value={providerId}
-                    className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
-                    data-testid={`provider-tab-${providerId}`}
                   >
                     {providerId === "openai" ? "ChatGPT" : "Google"}
                   </TabsTrigger>
@@ -135,7 +144,11 @@ export function ModelSelector({
 
               {/* Контент для каждого провайдера - один и тот же список моделей */}
               {configuredProviders.map((providerId) => (
-                <TabsContent key={providerId} value={providerId} className="m-0 p-2">
+                <TabsContent
+                  className="m-0 p-2"
+                  key={providerId}
+                  value={providerId}
+                >
                   <div className="flex flex-col gap-1">
                     {modelCategories.map((category) => (
                       <div key={category.id}>
@@ -145,9 +158,10 @@ export function ModelSelector({
 
                           return (
                             <DropdownMenuItem
-                              key={id}
+                              className="cursor-pointer rounded-md px-3 py-2.5 hover:bg-accent"
                               data-active={isActive}
                               data-testid={`model-selector-item-${id}`}
+                              key={id}
                               onSelect={() => {
                                 setOpen(false);
                                 startTransition(() => {
@@ -155,13 +169,12 @@ export function ModelSelector({
                                   saveChatModelAsCookie(id);
                                 });
                               }}
-                              className="cursor-pointer rounded-md px-3 py-2.5 hover:bg-accent"
                             >
                               <button
                                 className="group/item flex w-full flex-row items-start justify-between gap-3"
                                 type="button"
                               >
-                                <div className="flex flex-col items-start gap-0.5 flex-1">
+                                <div className="flex flex-1 flex-col items-start gap-0.5">
                                   <div className="font-medium text-sm leading-tight">
                                     {category.label}
                                   </div>
@@ -170,8 +183,10 @@ export function ModelSelector({
                                   </div>
                                 </div>
 
-                                <div className="shrink-0 text-foreground pt-0.5">
-                                  {isActive && <CheckCircleFillIcon size={16} />}
+                                <div className="shrink-0 pt-0.5 text-foreground">
+                                  {isActive && (
+                                    <CheckCircleFillIcon size={16} />
+                                  )}
                                 </div>
                               </button>
                             </DropdownMenuItem>
@@ -182,9 +197,9 @@ export function ModelSelector({
                   </div>
 
                   {/* Устаревшие модели / дополнительные опции */}
-                  <div className="mt-2 pt-2 border-t">
+                  <div className="mt-2 border-t pt-2">
                     <button
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-accent rounded-md flex items-center justify-between"
+                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-accent"
                       onClick={() => {
                         // TODO: открыть расширенные настройки моделей
                         console.log("Устаревшие модели");
@@ -211,9 +226,10 @@ export function ModelSelector({
 
                     return (
                       <DropdownMenuItem
-                        key={id}
+                        className="cursor-pointer rounded-md px-3 py-2.5 hover:bg-accent"
                         data-active={isActive}
                         data-testid={`model-selector-item-${id}`}
+                        key={id}
                         onSelect={() => {
                           setOpen(false);
                           startTransition(() => {
@@ -221,13 +237,12 @@ export function ModelSelector({
                             saveChatModelAsCookie(id);
                           });
                         }}
-                        className="cursor-pointer rounded-md px-3 py-2.5 hover:bg-accent"
                       >
                         <button
                           className="group/item flex w-full flex-row items-start justify-between gap-3"
                           type="button"
                         >
-                          <div className="flex flex-col items-start gap-0.5 flex-1">
+                          <div className="flex flex-1 flex-col items-start gap-0.5">
                             <div className="font-medium text-sm leading-tight">
                               {category.label}
                             </div>
@@ -236,7 +251,7 @@ export function ModelSelector({
                             </div>
                           </div>
 
-                          <div className="shrink-0 text-foreground pt-0.5">
+                          <div className="shrink-0 pt-0.5 text-foreground">
                             {isActive && <CheckCircleFillIcon size={16} />}
                           </div>
                         </button>

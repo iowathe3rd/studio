@@ -1,5 +1,11 @@
 "use client";
 
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
+import { unstable_serialize } from "swr/infinite";
 import { ChatHeader } from "@/components/chat-header";
 import {
   AlertDialog,
@@ -21,12 +27,6 @@ import type { Vote } from "@/lib/supabase/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { fetcher, fetchWithErrorHandlers, generateUUID } from "@/lib/utils";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import useSWR, { useSWRConfig } from "swr";
-import { unstable_serialize } from "swr/infinite";
 import { Artifact } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 import { Messages } from "./messages";
@@ -67,12 +67,10 @@ export function Chat({
   const [input, setInput] = useState<string>("");
   const [usage, setUsage] = useState<AppUsage | undefined>(initialLastContext);
   const [showCreditCardAlert, setShowCreditCardAlert] = useState(false);
-  const [currentModelId, setCurrentModelId] = useState<ChatModelId>(
-    initialChatModel
-  );
-  const [currentProviderId, setCurrentProviderId] = useState<ModelProviderId>(
-    initialProvider
-  );
+  const [currentModelId, setCurrentModelId] =
+    useState<ChatModelId>(initialChatModel);
+  const [currentProviderId, setCurrentProviderId] =
+    useState<ModelProviderId>(initialProvider);
   const currentModelIdRef = useRef<ChatModelId>(currentModelId);
   const currentProviderIdRef = useRef<ModelProviderId>(currentProviderId);
 
@@ -178,11 +176,11 @@ export function Chat({
         <ChatHeader
           chatId={id}
           isReadonly={isReadonly}
-          selectedVisibilityType={initialVisibilityType}
-          selectedModelId={currentModelId}
-          selectedProviderId={currentProviderId}
           onModelChange={setCurrentModelId}
           onProviderChange={setCurrentProviderId}
+          selectedModelId={currentModelId}
+          selectedProviderId={currentProviderId}
+          selectedVisibilityType={initialVisibilityType}
         />
 
         <Messages
@@ -194,8 +192,8 @@ export function Chat({
           selectedModelId={currentModelId}
           setMessages={setMessages}
           status={status}
-          votes={votes}
           userName={userName}
+          votes={votes}
         />
 
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
@@ -253,8 +251,8 @@ export function Chat({
             <AlertDialogTitle>Включите биллинг AI-провайдера</AlertDialogTitle>
             <AlertDialogDescription>
               Это приложение требует, чтобы{" "}
-              {process.env.NODE_ENV === "production" ? "владелец" : "вы"} включили
-              биллинг для настроенного AI-провайдера.
+              {process.env.NODE_ENV === "production" ? "владелец" : "вы"}{" "}
+              включили биллинг для настроенного AI-провайдера.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

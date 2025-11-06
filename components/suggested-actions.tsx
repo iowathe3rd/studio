@@ -1,19 +1,19 @@
 "use client";
 
-import type { ChatMessage } from "@/lib/types";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { motion } from "framer-motion";
 import {
-    BarChart3,
-    Calendar,
-    Database,
-    FileText,
-    Globe,
-    PieChart,
-    Target,
-    TrendingUp
+  BarChart3,
+  Calendar,
+  Database,
+  FileText,
+  Globe,
+  PieChart,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 import { memo } from "react";
+import type { ChatMessage } from "@/lib/types";
 import { Button } from "./ui/button";
 import type { VisibilityType } from "./visibility-selector";
 
@@ -73,8 +73,7 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
           transition={{ delay: 0.05 * index }}
         >
           <Button
-            variant="outline"
-            className="h-auto w-full justify-start gap-3 p-4 text-left hover:bg-accent/50 transition-colors"
+            className="h-auto w-full justify-start gap-3 p-4 text-left transition-colors hover:bg-accent/50"
             onClick={() => {
               window.history.replaceState({}, "", `/chat/${chatId}`);
               sendMessage({
@@ -82,9 +81,10 @@ function PureSuggestedActions({ chatId, sendMessage }: SuggestedActionsProps) {
                 parts: [{ type: "text", text: action.text }],
               });
             }}
+            variant="outline"
           >
             <action.icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-            <span className="text-sm whitespace-normal">{action.text}</span>
+            <span className="whitespace-normal text-sm">{action.text}</span>
           </Button>
         </motion.div>
       ))}

@@ -34,10 +34,7 @@ export function useSignedUrl(
     }
 
     // If it's already a full URL, use it directly
-    if (
-      storageUrl.startsWith("http://") ||
-      storageUrl.startsWith("https://")
-    ) {
+    if (storageUrl.startsWith("http://") || storageUrl.startsWith("https://")) {
       setSignedUrl(storageUrl);
       return;
     }
@@ -208,9 +205,27 @@ export function useAssetSignedUrl(
   size: "small" | "medium" | "large" = "medium"
 ) {
   const transform = {
-    small: { width: 200, height: 200, resize: "cover" as const, quality: 75, format: "webp" as const },
-    medium: { width: 400, height: 300, resize: "cover" as const, quality: 80, format: "webp" as const },
-    large: { width: 800, height: 600, resize: "contain" as const, quality: 85, format: "webp" as const },
+    small: {
+      width: 200,
+      height: 200,
+      resize: "cover" as const,
+      quality: 75,
+      format: "webp" as const,
+    },
+    medium: {
+      width: 400,
+      height: 300,
+      resize: "cover" as const,
+      quality: 80,
+      format: "webp" as const,
+    },
+    large: {
+      width: 800,
+      height: 600,
+      resize: "contain" as const,
+      quality: 85,
+      format: "webp" as const,
+    },
   }[size];
 
   // For videos, use thumbnail if available

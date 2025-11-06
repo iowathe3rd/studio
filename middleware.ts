@@ -18,13 +18,16 @@ export async function middleware(request: NextRequest) {
 
   // Create Supabase client and get user (secure method)
   const { supabase, response } = createSupabaseMiddlewareResponse(request);
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
   if (!user || error) {
     const redirectUrl = encodeURIComponent(request.url);
 
     return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
+      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)
     );
   }
 

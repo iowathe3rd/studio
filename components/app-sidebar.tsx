@@ -1,42 +1,36 @@
-"use client"
+"use client";
 
-import {
-  Bot,
-  MessageSquare,
-  Plus,
-  Search,
-  Video,
-} from "lucide-react"
-import * as React from "react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { SidebarHistory } from "@/components/sidebar-history"
-import { TeamSwitcher } from "@/components/team-switcher"
-import { Input } from "@/components/ui/input"
+import type { User } from "@supabase/supabase-js";
+import { Bot, MessageSquare, Plus, Search, Video } from "lucide-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { SidebarHistory } from "@/components/sidebar-history";
+import { TeamSwitcher } from "@/components/team-switcher";
+import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter, SidebarHeader,
+  SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  useSidebar
-} from "@/components/ui/sidebar"
-import { chatModels } from "@/lib/ai/models"
-import type { User } from "@supabase/supabase-js"
-import { useRouter } from "next/navigation"
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { chatModels } from "@/lib/ai/models";
 
-export function AppSidebar({ 
+export function AppSidebar({
   user,
-  ...props 
-}: { 
+  ...props
+}: {
   user: User | undefined;
 } & React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter()
-  const { setOpenMobile, open, setOpen } = useSidebar()
-  const [searchQuery, setSearchQuery] = React.useState("")
+  const router = useRouter();
+  const { setOpenMobile, open, setOpen } = useSidebar();
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   const teams = [
     {
@@ -51,16 +45,17 @@ export function AppSidebar({
       plan: "Рабочая область",
       url: "/studio",
     },
-  ]
+  ];
 
   const modelsNav = chatModels.map((model) => ({
     title: model.name,
     url: "#",
     description: model.description,
-  }))
+  }));
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Гость"
-  const userEmail = user?.email || ""
+  const userName =
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Гость";
+  const userEmail = user?.email || "";
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -75,9 +70,9 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => {
-                setOpenMobile(false)
-                router.push("/")
-                router.refresh()
+                setOpenMobile(false);
+                router.push("/");
+                router.refresh();
               }}
               tooltip="Новый чат"
             >
@@ -90,34 +85,36 @@ export function AppSidebar({
         {/* Search - иконка всегда видна, при клике открывает sidebar */}
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton 
-              tooltip="Поиск чатов"
+            <SidebarMenuButton
               onClick={() => {
                 if (!open) {
-                  setOpen(true)
+                  setOpen(true);
                 }
               }}
+              tooltip="Поиск чатов"
             >
               <Search className="h-4 w-4" />
-              <span className="group-data-[collapsible=icon]:hidden">Поиск</span>
+              <span className="group-data-[collapsible=icon]:hidden">
+                Поиск
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
         {/* Search Input - только в expanded состоянии */}
-        <div className="group-data-[collapsible=icon]:hidden px-2 pb-2">
+        <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
           <Input
-            type="search"
-            placeholder="Поиск чатов..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
             className="h-8"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск чатов..."
+            type="search"
+            value={searchQuery}
           />
         </div>
       </SidebarHeader>
       <SidebarContent>
         {/* NavMain уже имеет group-data-[collapsible=icon]:hidden */}
-        <NavMain 
+        <NavMain
           items={[
             {
               title: "Модели ИИ",
@@ -126,25 +123,25 @@ export function AppSidebar({
               isActive: false,
               items: modelsNav,
             },
-          ]} 
+          ]}
         />
-        
+
         {/* SidebarHistory - скрыть в collapsed состоянии */}
         <div className="group-data-[collapsible=icon]:hidden">
-          <SidebarHistory user={user} searchQuery={searchQuery} />
+          <SidebarHistory searchQuery={searchQuery} user={user} />
         </div>
       </SidebarContent>
       <SidebarFooter>
         {/* NavUser - скрыть детали в collapsed, показать только аватар */}
-        <NavUser 
+        <NavUser
           user={{
             name: userName,
             email: userEmail,
             avatar: user?.user_metadata?.avatar_url || "/avatars/default.jpg",
-          }} 
+          }}
         />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

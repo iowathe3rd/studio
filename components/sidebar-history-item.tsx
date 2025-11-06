@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { memo } from "react";
-import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { VisibilityType } from "@/components/visibility-selector";
+import { useChatVisibility } from "@/hooks/use-chat-visibility";
 import type { Chat } from "@/lib/supabase/models";
 import {
   CheckCircleFillIcon,
@@ -45,7 +45,7 @@ const PureChatItem = ({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive} className="h-8 text-sm">
+      <SidebarMenuButton asChild className="h-8 text-sm" isActive={isActive}>
         <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
           <span className="truncate">{chat.title}</span>
         </Link>

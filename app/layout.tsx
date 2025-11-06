@@ -1,9 +1,9 @@
-import { ThemeProvider } from "@/components/theme-provider";
-import { SupabaseSessionProvider } from "@/lib/supabase/provider";
-import { getUser } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SupabaseSessionProvider } from "@/lib/supabase/provider";
+import { getUser } from "@/lib/supabase/server";
 
 import "./globals.css";
 
@@ -79,7 +79,7 @@ export default async function RootLayout({
         <SupabaseSessionProvider initialSession={session}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             {children}
-            <Toaster position="bottom-center" richColors closeButton />
+            <Toaster closeButton position="bottom-center" richColors />
           </ThemeProvider>
         </SupabaseSessionProvider>
       </body>

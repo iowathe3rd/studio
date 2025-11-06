@@ -1,26 +1,26 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
+  CheckCircle2,
+  ChevronDown,
+  CloudSun,
+  FileText,
+  Globe,
+  Lightbulb,
+  Loader2,
+  Sparkles,
+  WrenchIcon,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-    CheckCircle2,
-    ChevronDown,
-    CloudSun,
-    FileText,
-    Globe,
-    Lightbulb,
-    Loader2,
-    Sparkles,
-    WrenchIcon,
-} from "lucide-react";
-import { useState, type ReactNode } from "react";
 
 // Icons mapping for different tool types
 const toolIcons: Record<string, ReactNode> = {
@@ -143,9 +143,7 @@ function ReasoningStepItem({
             type="button"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="truncate font-medium text-sm">
-                {step.title}
-              </span>
+              <span className="truncate font-medium text-sm">{step.title}</span>
               {step.isStreaming && (
                 <Badge className="rounded-full" variant="secondary">
                   <Loader2 className="mr-1 size-3 animate-spin" />
@@ -189,15 +187,17 @@ export function ReasoningTrace({ steps, isStreaming }: ReasoningTraceProps) {
   if (steps.length === 0) return null;
 
   // Get summary of steps for the trigger
-  const completedSteps = steps.filter(s => !s.isStreaming && s.state === "output-available").length;
+  const completedSteps = steps.filter(
+    (s) => !s.isStreaming && s.state === "output-available"
+  ).length;
   const totalSteps = steps.length;
 
   return (
     <Accordion
       className="not-prose mb-4"
+      collapsible
       data-testid="reasoning-trace"
       type="single"
-      collapsible
     >
       <AccordionItem className="rounded-lg border bg-card" value="thinking">
         <AccordionTrigger className="px-4 py-3 hover:no-underline">

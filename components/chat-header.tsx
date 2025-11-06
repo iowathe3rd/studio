@@ -1,12 +1,12 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { memo } from "react";
+import { useWindowSize } from "usehooks-ts";
 import { SidebarToggle } from "@/components/sidebar-toggle";
 import { Button } from "@/components/ui/button";
 import type { ChatModelId } from "@/lib/ai/models";
 import type { ModelProviderId } from "@/lib/ai/providers";
-import { useRouter } from "next/navigation";
-import { memo } from "react";
-import { useWindowSize } from "usehooks-ts";
 import { PlusIcon } from "./icons";
 import { ModelSelectorHeader } from "./model-selector-header";
 import { useSidebar } from "./ui/sidebar";
@@ -41,11 +41,11 @@ function PureChatHeader({
       {/* Model Selector - как в ChatGPT */}
       {!isReadonly && selectedModelId && (
         <ModelSelectorHeader
-          selectedModelId={selectedModelId}
-          selectedProviderId={selectedProviderId}
+          className="order-1"
           onModelChange={onModelChange}
           onProviderChange={onProviderChange}
-          className="order-1"
+          selectedModelId={selectedModelId}
+          selectedProviderId={selectedProviderId}
         />
       )}
 

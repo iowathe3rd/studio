@@ -65,9 +65,8 @@ export class ArtifactPage {
       .getByTestId("message-content")
       .innerText();
 
-    const reasoningLocator = lastMessageElement.getByTestId(
-      "message-reasoning"
-    );
+    const reasoningLocator =
+      lastMessageElement.getByTestId("message-reasoning");
     const reasoningElement = (await reasoningLocator
       .isVisible()
       .catch(() => false))

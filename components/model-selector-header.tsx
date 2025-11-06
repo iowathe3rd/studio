@@ -1,6 +1,11 @@
 "use client";
 
-import { saveChatModelAsCookie, saveProviderAsCookie } from "@/app/(chat)/actions";
+import { ChevronDownIcon } from "lucide-react";
+import { memo, startTransition, useEffect, useMemo, useState } from "react";
+import {
+  saveChatModelAsCookie,
+  saveProviderAsCookie,
+} from "@/app/(chat)/actions";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,8 +18,6 @@ import {
 import type { ChatModelId } from "@/lib/ai/models";
 import { getConfiguredProviders } from "@/lib/ai/provider-selector";
 import type { ModelProviderId } from "@/lib/ai/providers";
-import { ChevronDownIcon } from "lucide-react";
-import { memo, startTransition, useEffect, useMemo, useState } from "react";
 
 // Маппинг моделей на красивые названия для разных провайдеров
 const MODEL_DISPLAY_NAMES: Record<
@@ -64,7 +67,8 @@ function getProviderShortName(providerId: ModelProviderId): string {
 
 // Получить название группы моделей
 function getModelGroupName(providerId: ModelProviderId): string {
-  const version = MODEL_DISPLAY_NAMES[providerId]["chat-model-reasoning"].version;
+  const version =
+    MODEL_DISPLAY_NAMES[providerId]["chat-model-reasoning"].version;
   return providerId === "openai" ? `GPT-${version}` : `Gemini ${version}`;
 }
 
@@ -83,8 +87,10 @@ function PureModelSelectorHeader({
   onProviderChange,
   className,
 }: ModelSelectorHeaderProps) {
-  const [optimisticModelId, setOptimisticModelId] = useState<ChatModelId>(selectedModelId);
-  const [optimisticProviderId, setOptimisticProviderId] = useState<ModelProviderId>(selectedProviderId);
+  const [optimisticModelId, setOptimisticModelId] =
+    useState<ChatModelId>(selectedModelId);
+  const [optimisticProviderId, setOptimisticProviderId] =
+    useState<ModelProviderId>(selectedProviderId);
 
   useEffect(() => {
     setOptimisticModelId(selectedModelId);
@@ -100,9 +106,10 @@ function PureModelSelectorHeader({
   // Получить текст для кнопки
   const buttonText = useMemo(() => {
     const providerShortName = getProviderShortName(optimisticProviderId);
-    const modelInfo = MODEL_DISPLAY_NAMES[optimisticProviderId][optimisticModelId];
+    const modelInfo =
+      MODEL_DISPLAY_NAMES[optimisticProviderId][optimisticModelId];
     const version = modelInfo?.version || "";
-    
+
     // Формат: "ChatGPT 5" или "Google 2.5"
     return `${providerShortName} ${version}`;
   }, [optimisticModelId, optimisticProviderId]);
@@ -134,11 +141,11 @@ function PureModelSelectorHeader({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          className={`h-9 gap-2 px-3 font-medium text-sm ${className || ""}`}
           variant="ghost"
-          className={`h-9 px-3 gap-2 font-medium text-sm ${className || ""}`}
         >
           {buttonText}
-          <ChevronDownIcon size={16} className="opacity-50" />
+          <ChevronDownIcon className="opacity-50" size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[280px] p-0">
@@ -146,7 +153,7 @@ function PureModelSelectorHeader({
           {/* Секция провайдеров (если > 1) */}
           {showProviderSelector && (
             <>
-              <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+              <div className="px-3 pt-2 pb-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
                 Провайдер
               </div>
               <DropdownMenuGroup className="p-1">
@@ -154,21 +161,25 @@ function PureModelSelectorHeader({
                   const isActive = providerId === optimisticProviderId;
                   return (
                     <DropdownMenuItem
-                      key={providerId}
                       className="cursor-pointer py-2.5"
+                      key={providerId}
                       onSelect={() => handleProviderChange(providerId)}
                     >
-                      <div className="flex items-center justify-between gap-3 w-full">
+                      <div className="flex w-full items-center justify-between gap-3">
                         <div className="flex flex-col gap-0.5">
                           <div className="font-medium text-sm">
                             {getProviderShortName(providerId)}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            {providerId === "openai" ? "GPT модели" : "Gemini модели"}
+                          <div className="text-muted-foreground text-xs">
+                            {providerId === "openai"
+                              ? "GPT модели"
+                              : "Gemini модели"}
                           </div>
                         </div>
                         {isActive && (
-                          <span className="text-sm text-primary font-bold">✓</span>
+                          <span className="font-bold text-primary text-sm">
+                            ✓
+                          </span>
                         )}
                       </div>
                     </DropdownMenuItem>
@@ -180,29 +191,34 @@ function PureModelSelectorHeader({
           )}
 
           {/* Секция моделей */}
-          <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="px-3 pt-2 pb-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
             {getModelGroupName(optimisticProviderId)}
           </div>
           <DropdownMenuGroup className="p-1">
             {modelOrder.map((modelId) => {
-              const modelInfo = MODEL_DISPLAY_NAMES[optimisticProviderId][modelId];
+              const modelInfo =
+                MODEL_DISPLAY_NAMES[optimisticProviderId][modelId];
               const isActive = modelId === optimisticModelId;
 
               return (
                 <DropdownMenuItem
-                  key={modelId}
                   className="cursor-pointer py-2.5"
+                  key={modelId}
                   onSelect={() => handleModelChange(modelId)}
                 >
-                  <div className="flex items-start justify-between gap-3 w-full">
-                    <div className="flex flex-col gap-0.5 flex-1">
-                      <div className="font-medium text-sm">{modelInfo.label}</div>
-                      <div className="text-xs text-muted-foreground leading-snug">
+                  <div className="flex w-full items-start justify-between gap-3">
+                    <div className="flex flex-1 flex-col gap-0.5">
+                      <div className="font-medium text-sm">
+                        {modelInfo.label}
+                      </div>
+                      <div className="text-muted-foreground text-xs leading-snug">
                         {modelInfo.description}
                       </div>
                     </div>
                     {isActive && (
-                      <span className="text-sm text-primary font-bold pt-0.5">✓</span>
+                      <span className="pt-0.5 font-bold text-primary text-sm">
+                        ✓
+                      </span>
                     )}
                   </div>
                 </DropdownMenuItem>

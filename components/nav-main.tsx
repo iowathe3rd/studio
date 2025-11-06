@@ -1,45 +1,46 @@
-"use client"
+"use client";
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight, type LucideIcon } from "lucide-react";
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
-  SidebarGroup, SidebarMenu,
+  SidebarGroup,
+  SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
-  SidebarMenuSubItem
-} from "@/components/ui/sidebar"
+  SidebarMenuSubItem,
+} from "@/components/ui/sidebar";
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
+    title: string;
+    url: string;
+    icon?: LucideIcon;
+    isActive?: boolean;
     items?: {
-      title: string
-      url: string
-      description?: string
-    }[]
-  }[]
+      title: string;
+      url: string;
+      description?: string;
+    }[];
+  }[];
 }) {
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible
-            key={item.title}
             asChild
-            defaultOpen={item.isActive}
             className="group/collapsible"
+            defaultOpen={item.isActive}
+            key={item.title}
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
@@ -67,5 +68,5 @@ export function NavMain({
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

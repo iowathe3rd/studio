@@ -1,23 +1,5 @@
 "use client";
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu,
-    useSidebar,
-} from "@/components/ui/sidebar";
-import type { Chat } from "@/lib/supabase/models";
-import { fetcher } from "@/lib/utils";
 import type { User } from "@supabase/supabase-js";
 import { isToday, isYesterday, subMonths, subWeeks } from "date-fns";
 import { motion } from "framer-motion";
@@ -25,6 +7,24 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWRInfinite from "swr/infinite";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import type { Chat } from "@/lib/supabase/models";
+import { fetcher } from "@/lib/utils";
 import { LoaderIcon } from "./icons";
 import { ChatItem } from "./sidebar-history-item";
 
@@ -97,10 +97,10 @@ export function getChatHistoryPaginationKey(
   return `/api/history?ending_before=${firstChatFromPage.id}&limit=${PAGE_SIZE}`;
 }
 
-export function SidebarHistory({ 
-  user, 
-  searchQuery = "" 
-}: { 
+export function SidebarHistory({
+  user,
+  searchQuery = "",
+}: {
   user: User | undefined;
   searchQuery?: string;
 }) {
@@ -236,7 +236,7 @@ export function SidebarHistory({
                   <div className="flex flex-col gap-3">
                     {groupedChats.today.length > 0 && (
                       <div className="flex flex-col gap-0.5">
-                        <div className="px-2 py-1 text-muted-foreground text-xs font-normal tracking-tight">
+                        <div className="px-2 py-1 font-normal text-muted-foreground text-xs tracking-tight">
                           Today
                         </div>
                         {groupedChats.today.map((chat) => (
@@ -256,7 +256,7 @@ export function SidebarHistory({
 
                     {groupedChats.yesterday.length > 0 && (
                       <div className="flex flex-col gap-0.5">
-                        <div className="px-2 py-1 text-muted-foreground text-xs font-normal tracking-tight">
+                        <div className="px-2 py-1 font-normal text-muted-foreground text-xs tracking-tight">
                           Yesterday
                         </div>
                         {groupedChats.yesterday.map((chat) => (
@@ -276,7 +276,7 @@ export function SidebarHistory({
 
                     {groupedChats.lastWeek.length > 0 && (
                       <div className="flex flex-col gap-0.5">
-                        <div className="px-2 py-1 text-muted-foreground text-xs font-normal tracking-tight">
+                        <div className="px-2 py-1 font-normal text-muted-foreground text-xs tracking-tight">
                           Last 7 days
                         </div>
                         {groupedChats.lastWeek.map((chat) => (
@@ -296,7 +296,7 @@ export function SidebarHistory({
 
                     {groupedChats.lastMonth.length > 0 && (
                       <div className="flex flex-col gap-0.5">
-                        <div className="px-2 py-1 text-muted-foreground text-xs font-normal tracking-tight">
+                        <div className="px-2 py-1 font-normal text-muted-foreground text-xs tracking-tight">
                           Last 30 days
                         </div>
                         {groupedChats.lastMonth.map((chat) => (
@@ -316,7 +316,7 @@ export function SidebarHistory({
 
                     {groupedChats.older.length > 0 && (
                       <div className="flex flex-col gap-0.5">
-                        <div className="px-2 py-1 text-muted-foreground text-xs font-normal tracking-tight">
+                        <div className="px-2 py-1 font-normal text-muted-foreground text-xs tracking-tight">
                           Older
                         </div>
                         {groupedChats.older.map((chat) => (

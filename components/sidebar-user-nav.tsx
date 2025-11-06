@@ -1,5 +1,10 @@
 "use client";
 
+import type { User } from "@supabase/supabase-js";
+import { ChevronUp } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,11 +18,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSupabaseSession } from "@/lib/supabase/provider";
-import type { User } from "@supabase/supabase-js";
-import { ChevronUp } from "lucide-react";
-import { useTheme } from "next-themes";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { LoaderIcon } from "./icons";
 import { toast } from "./toast";
 
@@ -42,10 +42,10 @@ export function SidebarUserNav({ user: initialUser }: { user?: User }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             {isLoading ? (
-              <SidebarMenuButton className="h-9 text-sm justify-between data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-                <div className="flex flex-row gap-2 items-center">
+              <SidebarMenuButton className="h-9 justify-between text-sm data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+                <div className="flex flex-row items-center gap-2">
                   <div className="h-5 w-5 animate-pulse rounded-full bg-muted" />
-                  <span className="animate-pulse rounded-md bg-muted text-transparent text-sm">
+                  <span className="animate-pulse rounded-md bg-muted text-sm text-transparent">
                     Loading...
                   </span>
                 </div>
@@ -65,7 +65,10 @@ export function SidebarUserNav({ user: initialUser }: { user?: User }) {
                   src={`https://avatar.vercel.sh/${user?.email}`}
                   width={20}
                 />
-                <span className="truncate text-sm font-normal" data-testid="user-email">
+                <span
+                  className="truncate font-normal text-sm"
+                  data-testid="user-email"
+                >
                   {isGuest ? "Guest" : user?.email}
                 </span>
                 <ChevronUp className="ml-auto h-4 w-4" />

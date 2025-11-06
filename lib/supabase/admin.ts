@@ -12,7 +12,7 @@ function getSupabaseAdminEnvVars() {
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error(
       "Missing Supabase admin environment variables. " +
-        "Make sure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.",
+        "Make sure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set."
     );
   }
 
@@ -23,16 +23,12 @@ export function createSupabaseAdminClient(): SupabaseClient<Database> {
   if (!client) {
     const { supabaseUrl, serviceRoleKey } = getSupabaseAdminEnvVars();
 
-    client = createClient<Database>(
-      supabaseUrl,
-      serviceRoleKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
+    client = createClient<Database>(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
-    );
+    });
   }
 
   return client;

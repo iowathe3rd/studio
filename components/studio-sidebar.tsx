@@ -1,45 +1,44 @@
-"use client"
+"use client";
 
+import type { User } from "@supabase/supabase-js";
 import {
-    Film,
-    FolderOpen,
-    Layout,
-    MessageSquare,
-    Plus,
-    Sparkles,
-    Video,
-} from "lucide-react"
-import * as React from "react"
-
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+  Film,
+  FolderOpen,
+  Layout,
+  MessageSquare,
+  Plus,
+  Sparkles,
+  Video,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import type * as React from "react";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarRail,
-    useSidebar,
-} from "@/components/ui/sidebar"
-import type { User } from "@supabase/supabase-js"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
-export function StudioSidebar({ 
+export function StudioSidebar({
   user,
-  ...props 
-}: { 
+  ...props
+}: {
   user: User | undefined;
 } & React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const { setOpenMobile } = useSidebar()
+  const router = useRouter();
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
 
   const teams = [
     {
@@ -54,7 +53,7 @@ export function StudioSidebar({
       plan: "Workspace",
       url: "/studio",
     },
-  ]
+  ];
 
   const navigation = [
     {
@@ -78,36 +77,37 @@ export function StudioSidebar({
       href: "/studio/assets",
       icon: Film,
     },
-  ]
+  ];
 
   const quickActions = [
     {
       name: "Generate Image",
       onClick: () => {
-        setOpenMobile(false)
-        router.push("/studio/new?type=text-to-image")
+        setOpenMobile(false);
+        router.push("/studio/new?type=text-to-image");
       },
       icon: Sparkles,
     },
     {
       name: "Generate Video",
       onClick: () => {
-        setOpenMobile(false)
-        router.push("/studio/new?type=text-to-video")
+        setOpenMobile(false);
+        router.push("/studio/new?type=text-to-video");
       },
       icon: Film,
     },
-  ]
+  ];
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) {
-      return pathname === href
+      return pathname === href;
     }
-    return pathname.startsWith(href)
-  }
+    return pathname.startsWith(href);
+  };
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest"
-  const userEmail = user?.email || ""
+  const userName =
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Guest";
+  const userEmail = user?.email || "";
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -117,8 +117,8 @@ export function StudioSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => {
-                setOpenMobile(false)
-                router.push("/studio/new")
+                setOpenMobile(false);
+                router.push("/studio/new");
               }}
               tooltip="New Project"
             >
@@ -140,10 +140,7 @@ export function StudioSidebar({
                     isActive={isActive(item.href, item.exact)}
                     tooltip={item.name}
                   >
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpenMobile(false)}
-                    >
+                    <Link href={item.href} onClick={() => setOpenMobile(false)}>
                       <item.icon className="h-4 w-4" />
                       <span>{item.name}</span>
                     </Link>
@@ -174,15 +171,15 @@ export function StudioSidebar({
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser 
+        <NavUser
           user={{
             name: userName,
             email: userEmail,
             avatar: user?.user_metadata?.avatar_url || "/avatars/default.jpg",
-          }} 
+          }}
         />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

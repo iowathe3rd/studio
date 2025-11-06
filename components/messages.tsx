@@ -1,12 +1,12 @@
-import { useMessages } from "@/hooks/use-messages";
-import type { ChatModelId } from "@/lib/ai/models";
-import type { Vote } from "@/lib/supabase/models";
-import type { ChatMessage } from "@/lib/types";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import equal from "fast-deep-equal";
 import { AnimatePresence } from "framer-motion";
 import { ArrowDownIcon } from "lucide-react";
 import { memo, useEffect } from "react";
+import { useMessages } from "@/hooks/use-messages";
+import type { ChatModelId } from "@/lib/ai/models";
+import type { Vote } from "@/lib/supabase/models";
+import type { ChatMessage } from "@/lib/types";
 import { useDataStream } from "./data-stream-provider";
 import { Conversation, ConversationContent } from "./elements/conversation";
 import { Greeting } from "./greeting";

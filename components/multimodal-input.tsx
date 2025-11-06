@@ -1,50 +1,53 @@
 "use client";
 
-import { saveChatModelAsCookie, saveProviderAsCookie } from "@/app/(chat)/actions";
-import { SelectItem } from "@/components/ui/select";
-import { type ChatModelId, chatModels } from "@/lib/ai/models";
-import {
-    getConfiguredProviders,
-    getProviderDisplayName,
-    type ModelProviderId,
-} from "@/lib/ai/providers";
-import type { Attachment, ChatMessage } from "@/lib/types";
-import type { AppUsage } from "@/lib/usage";
-import { cn } from "@/lib/utils";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { Trigger } from "@radix-ui/react-select";
 import type { UIMessage } from "ai";
 import equal from "fast-deep-equal";
 import {
-    type ChangeEvent,
-    type Dispatch,
-    memo,
-    type SetStateAction,
-    startTransition,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  type ChangeEvent,
+  type Dispatch,
+  memo,
+  type SetStateAction,
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage, useWindowSize } from "usehooks-ts";
+import {
+  saveChatModelAsCookie,
+  saveProviderAsCookie,
+} from "@/app/(chat)/actions";
+import { SelectItem } from "@/components/ui/select";
+import { type ChatModelId, chatModels } from "@/lib/ai/models";
+import {
+  getConfiguredProviders,
+  getProviderDisplayName,
+  type ModelProviderId,
+} from "@/lib/ai/providers";
+import type { Attachment, ChatMessage } from "@/lib/types";
+import type { AppUsage } from "@/lib/usage";
+import { cn } from "@/lib/utils";
 import { Context } from "./elements/context";
 import {
-    PromptInput,
-    PromptInputModelSelect,
-    PromptInputModelSelectContent,
-    PromptInputSubmit,
-    PromptInputTextarea,
-    PromptInputToolbar,
-    PromptInputTools,
+  PromptInput,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
 } from "./elements/prompt-input";
 import {
-    ArrowUpIcon,
-    ChevronDownIcon,
-    CpuIcon,
-    PaperclipIcon,
-    StopIcon,
+  ArrowUpIcon,
+  ChevronDownIcon,
+  CpuIcon,
+  PaperclipIcon,
+  StopIcon,
 } from "./icons";
 import { PreviewAttachment } from "./preview-attachment";
 import { SuggestedActions } from "./suggested-actions";
@@ -253,14 +256,14 @@ function PureMultimodalInput({
     },
     [setAttachments, uploadFile]
   );
-  
+
   const handlePaste = useCallback(
     async (event: ClipboardEvent) => {
       const items = event.clipboardData?.items;
       if (!items) return;
 
       const imageItems = Array.from(items).filter((item) =>
-        item.type.startsWith('image/'),
+        item.type.startsWith("image/")
       );
 
       if (imageItems.length === 0) return;
@@ -268,7 +271,7 @@ function PureMultimodalInput({
       // Prevent default paste behavior for images
       event.preventDefault();
 
-      setUploadQueue((prev) => [...prev, 'Pasted image']);
+      setUploadQueue((prev) => [...prev, "Pasted image"]);
 
       try {
         const uploadPromises = imageItems.map(async (item) => {
@@ -282,7 +285,7 @@ function PureMultimodalInput({
           (attachment) =>
             attachment !== undefined &&
             attachment.url !== undefined &&
-            attachment.contentType !== undefined,
+            attachment.contentType !== undefined
         );
 
         setAttachments((curr) => [
@@ -290,13 +293,13 @@ function PureMultimodalInput({
           ...(successfullyUploadedAttachments as Attachment[]),
         ]);
       } catch (error) {
-        console.error('Error uploading pasted images:', error);
-        toast.error('Failed to upload pasted image(s)');
+        console.error("Error uploading pasted images:", error);
+        toast.error("Failed to upload pasted image(s)");
       } finally {
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments]
   );
 
   // Add paste event listener to textarea
@@ -304,8 +307,8 @@ function PureMultimodalInput({
     const textarea = textareaRef.current;
     if (!textarea) return;
 
-    textarea.addEventListener('paste', handlePaste);
-    return () => textarea.removeEventListener('paste', handlePaste);
+    textarea.addEventListener("paste", handlePaste);
+    return () => textarea.removeEventListener("paste", handlePaste);
   }, [handlePaste]);
 
   return (
@@ -416,9 +419,9 @@ function PureMultimodalInput({
           ) : (
             <PromptInputSubmit
               className="size-8 rounded-full bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground"
+              data-testid="send-button"
               disabled={!input.trim() || uploadQueue.length > 0}
               status={status}
-	      data-testid="send-button"
             >
               <ArrowUpIcon size={14} />
             </PromptInputSubmit>
@@ -486,17 +489,17 @@ const AttachmentsButton = memo(PureAttachmentsButton);
 
 /**
  * @deprecated This component is deprecated in favor of ModelSelectorHeader in chat-header.tsx
- * 
+ *
  * ModelSelectorCompact was previously used in the input toolbar but has been replaced
  * by ModelSelectorHeader which is now displayed in the chat header (similar to ChatGPT).
- * 
+ *
  * This component is kept for:
  * - Backwards compatibility
  * - Potential mobile-specific use cases
  * - Reference implementation
- * 
+ *
  * Consider removing in future versions if no longer needed.
- * 
+ *
  * @see components/model-selector-header.tsx for the new implementation
  */
 function PureModelSelectorCompact({
@@ -531,7 +534,10 @@ function PureModelSelectorCompact({
   const showProviderSelector = configuredProviders.length > 1;
 
   // Маппинг моделей на красивые названия
-  const modelLabels: Record<ChatModelId, { label: string; description: string }> = {
+  const modelLabels: Record<
+    ChatModelId,
+    { label: string; description: string }
+  > = {
     "chat-model": {
       label: "Auto",
       description: "Решает, как долго думать",
@@ -573,7 +579,7 @@ function PureModelSelectorCompact({
       value={optimisticModelId}
     >
       <Trigger asChild>
-        <Button variant="ghost" className="h-8 px-2">
+        <Button className="h-8 px-2" variant="ghost">
           <CpuIcon size={16} />
           <span className="hidden font-medium text-xs sm:block">
             <span className="text-foreground">
@@ -581,11 +587,12 @@ function PureModelSelectorCompact({
             </span>
             {showProviderSelector && (
               <span className="text-muted-foreground">
-                {" "}• {modelLabels[optimisticModelId]?.label || selectedModel?.name}
+                {" "}
+                • {modelLabels[optimisticModelId]?.label || selectedModel?.name}
               </span>
             )}
             {!showProviderSelector && (
-              <span className="text-muted-foreground ml-1">
+              <span className="ml-1 text-muted-foreground">
                 {modelLabels[optimisticModelId]?.label || selectedModel?.name}
               </span>
             )}
@@ -597,47 +604,55 @@ function PureModelSelectorCompact({
         <div className="flex flex-col">
           {showProviderSelector && (
             <>
-              <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+              <div className="px-3 pt-2 pb-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
                 Провайдер
               </div>
               <div className="px-1 pb-1">
                 {configuredProviders.map((providerId) => (
                   <SelectItem
+                    className="cursor-pointer"
                     key={`provider-${providerId}`}
                     value={`provider:${providerId}`}
-                    className="cursor-pointer"
                   >
-                    <div className="flex items-center justify-between gap-3 w-full py-0.5">
+                    <div className="flex w-full items-center justify-between gap-3 py-0.5">
                       <div className="flex flex-col gap-0.5">
                         <div className="font-medium text-xs">
                           {providerId === "openai" ? "ChatGPT" : "Google"}
                         </div>
                         <div className="text-[10px] text-muted-foreground">
-                          {providerId === "openai" ? "GPT модели" : "Gemini модели"}
+                          {providerId === "openai"
+                            ? "GPT модели"
+                            : "Gemini модели"}
                         </div>
                       </div>
                       {providerId === optimisticProviderId && (
-                        <span className="text-xs text-primary font-bold">✓</span>
+                        <span className="font-bold text-primary text-xs">
+                          ✓
+                        </span>
                       )}
                     </div>
                   </SelectItem>
                 ))}
               </div>
-              <div className="h-px bg-border mx-2" />
+              <div className="mx-2 h-px bg-border" />
             </>
           )}
-          <div className="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="px-3 pt-2 pb-1.5 font-semibold text-[10px] text-muted-foreground uppercase tracking-wide">
             Модель
           </div>
           <div className="px-1 pb-1">
             {chatModels.map((model) => {
               const info = modelLabels[model.id];
               const isActive = model.id === optimisticModelId;
-              
+
               return (
-                <SelectItem key={model.id} value={model.id} className="cursor-pointer">
-                  <div className="flex items-start justify-between gap-3 w-full py-0.5">
-                    <div className="flex flex-col gap-0.5 flex-1">
+                <SelectItem
+                  className="cursor-pointer"
+                  key={model.id}
+                  value={model.id}
+                >
+                  <div className="flex w-full items-start justify-between gap-3 py-0.5">
+                    <div className="flex flex-1 flex-col gap-0.5">
                       <div className="font-medium text-xs">
                         {info?.label || model.name}
                       </div>
@@ -646,7 +661,9 @@ function PureModelSelectorCompact({
                       </div>
                     </div>
                     {isActive && (
-                      <span className="text-xs text-primary font-bold pt-0.5">✓</span>
+                      <span className="pt-0.5 font-bold text-primary text-xs">
+                        ✓
+                      </span>
                     )}
                   </div>
                 </SelectItem>
