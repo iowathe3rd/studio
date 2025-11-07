@@ -6,6 +6,10 @@ import type {
     StudioGeneration,
     StudioProject,
 } from "@/lib/studio/types";
+import {
+  getProjectAssetsAction,
+  getProjectGenerationsAction,
+} from "@/lib/studio/actions";
 import { FolderOpen, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
 import { AssetGallery } from "./asset-gallery";
@@ -28,19 +32,25 @@ export function ProjectStudio({
   const [activeTab, setActiveTab] = useState("generate");
 
   const handleGenerationStart = useCallback((generationId: string) => {
-    // Optionally refresh generations
     console.log("Generation started:", generationId);
   }, []);
 
   const handleGenerationComplete = useCallback(() => {
-    // Refresh assets and generations
-    console.log("Generation completed");
+    refreshGenerations();
   }, []);
 
-  const refreshGenerations = useCallback(() => {
-    // TODO: Implement refresh
-    console.log("Refreshing generations");
-  }, []);
+  const refreshGenerations = useCallback(async () => {
+    try {
+      const [newAssets, newGenerations] = await Promise.all([
+        getProjectAssetsAction(project.id),
+        getProjectGenerationsAction(project.id),
+      ]);
+      setAssets(newAssets);
+      setGenerations(newGenerations);
+    } catch (error) {
+      console.error("Failed to refresh generations:", error);
+    }
+  }, [project.id]);
 
   return (
     <div className="flex h-full flex-col bg-background">

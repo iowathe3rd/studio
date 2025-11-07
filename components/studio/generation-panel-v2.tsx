@@ -308,6 +308,9 @@ export function GenerationPanelV2({
         "last-frame": null,
         "reference-video": null,
       });
+
+      // Call completion callback to refresh UI
+      onGenerationComplete?.();
     } catch (error: any) {
       showStudioError(error, "generation");
     } finally {
