@@ -184,10 +184,31 @@ export function GenerationHistory({
                     {/* Thumbnail/Preview */}
                     <div className="shrink-0">
                       {generation.status === "completed" &&
-                      generation.outputAssetId ? (
+                      generation.falResponse ? (
                         <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border-border border bg-muted/30">
-                          {/* TODO: Load actual asset thumbnail */}
-                          <MediaIcon className="h-6 w-6 text-muted-foreground/60" />
+                          {isVideo ? (
+                            <video
+                              className="h-full w-full object-cover"
+                              src={
+                                (generation.falResponse as any)?.video?.url ||
+                                (Array.isArray((generation.falResponse as any)?.videos)
+                                  ? (generation.falResponse as any).videos[0]?.url
+                                  : undefined)
+                              }
+                            />
+                          ) : (
+                            <img
+                              alt="Generated image"
+                              className="h-full w-full object-cover"
+                              src={
+                                (generation.falResponse as any)?.images?.[0]?.url ||
+                                (generation.falResponse as any)?.image?.url ||
+                                (Array.isArray((generation.falResponse as any)?.images)
+                                  ? (generation.falResponse as any).images[0]?.url
+                                  : undefined)
+                              }
+                            />
+                          )}
                         </div>
                       ) : (
                         <div
