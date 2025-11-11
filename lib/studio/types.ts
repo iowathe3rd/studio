@@ -108,6 +108,7 @@ export type FalGenerationInput = {
   prompt: string;
   negative_prompt?: string;
   image_url?: string;
+  image_urls?: string[];
   video_url?: string;
   first_frame_image_url?: string;
   last_frame_image_url?: string;
@@ -124,8 +125,9 @@ export type FalGenerationInput = {
     | "landscape_4_3"
     | "landscape_16_9";
   fps?: number;
-  duration?: number;
+  duration?: number | string;
   seed?: number;
+  video_id?: string;
   [key: string]: unknown;
 };
 
@@ -195,7 +197,7 @@ export type GenerationRequest = {
     imageSize?: string;
     numInferenceSteps?: number;
     guidanceScale?: number;
-    duration?: number;
+    duration?: number | string;
     fps?: number;
     seed?: number;
     [key: string]: unknown;

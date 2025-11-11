@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,16 +30,15 @@ import {
   AlertCircle,
   ChevronRight,
   Film,
-  Image as ImageIcon,
+  ImageIcon,
   Info,
+  Layers,
   Loader2,
   Sparkles,
   Video,
-  Wand2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Slider } from "../ui/slider";
 import { Switch } from "../ui/switch";
 import { ModelCapabilityBadge } from "./model-capability-badge";
 import { ModelSelectorDialog } from "./model-selector-dialog";
@@ -66,12 +59,6 @@ const GENERATION_TYPES: Array<{
   description: string;
 }> = [
   {
-    value: "text-to-image",
-    label: "Text to Image",
-    icon: ImageIcon,
-    description: "Generate images from text descriptions",
-  },
-  {
     value: "text-to-video",
     label: "Text to Video",
     icon: Video,
@@ -84,10 +71,10 @@ const GENERATION_TYPES: Array<{
     description: "Animate images into videos",
   },
   {
-    value: "image-to-image",
-    label: "Image to Image",
-    icon: Wand2,
-    description: "Transform images with AI",
+    value: "video-to-video",
+    label: "Video to Video",
+    icon: Layers,
+    description: "Remix or extend existing clips",
   },
 ];
 
@@ -97,7 +84,7 @@ export function GenerationPanelV2({
   onGenerationComplete,
 }: GenerationPanelProps) {
   const [generationType, setGenerationType] =
-    useState<StudioGenerationType>("text-to-image");
+    useState<StudioGenerationType>("text-to-video");
   const [selectedModel, setSelectedModel] = useState<FalStudioModel | null>(
     () => getRecommendedModels(generationType)[0] || null
   );
@@ -105,20 +92,6 @@ export function GenerationPanelV2({
 
   // Generation parameters
   const [prompt, setPrompt] = useState("");
-  const [negativePrompt, setNegativePrompt] = useState("");
-  const [imageSize, setImageSize] = useState("landscape_16_9");
-  const [steps, setSteps] = useState([28]);
-  const [guidanceScale, setGuidanceScale] = useState([7.5]);
-  const [seed, setSeed] = useState<number | undefined>(undefined);
-  const [randomSeed, setRandomSeed] = useState(true);
-  const [duration, setDuration] = useState([5]);
-  const [fps, setFps] = useState([24]);
-
-  // Veo-specific parameters
-  const [aspectRatio, setAspectRatio] = useState("16:9");
-  const [resolution, setResolution] = useState("720p");
-  const [enhancePrompt, setEnhancePrompt] = useState(false);
-  const [autoFix, setAutoFix] = useState(false);
 
   // Reference inputs (images/videos) - unified state
   const [referenceInputs, setReferenceInputs] = useState<
@@ -134,6 +107,52 @@ export function GenerationPanelV2({
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [projectTemplateDialogOpen, setProjectTemplateDialogOpen] =
     useState(false);
+  const [modelSettings, setModelSettings] = useState<
+    Record<string, string | number | boolean>
+  >({});
+
+  const buildDefaultSettings = useCallback(
+    (model: FalStudioModel | null) => {
+      if (!model?.settings) return {};
+
+      return model.settings.reduce<Record<string, string | number | boolean>>(
+        (acc, setting) => {
+          if (setting.type === "toggle" || setting.type === "select") {
+            acc[setting.key] = setting.defaultValue;
+          } else {
+            acc[setting.key] = setting.defaultValue ?? "";
+          }
+          return acc;
+        },
+        {}
+      );
+    },
+    []
+  );
+
+  useEffect(() => {
+    setModelSettings(buildDefaultSettings(selectedModel));
+  }, [selectedModel, buildDefaultSettings]);
+
+  const selectedModelSettings = useMemo(
+    () => selectedModel?.settings ?? [],
+    [selectedModel]
+  );
+
+  const availableSettingKeys = useMemo(
+    () => new Set(selectedModelSettings.map((setting) => setting.key)),
+    [selectedModelSettings]
+  );
+
+  const findSettingByKey = useCallback(
+    (key: string) => selectedModelSettings.find((setting) => setting.key === key),
+    [selectedModelSettings]
+  );
+
+  const hasSetting = useCallback(
+    (key: string) => availableSettingKeys.has(key),
+    [availableSettingKeys]
+  );
 
   // Compute required and optional inputs based on selected model
   const modelRequirements = useMemo(() => {
@@ -153,46 +172,66 @@ export function GenerationPanelV2({
     );
   }, [modelRequirements.required, referenceInputs]);
 
-  // Check if prompt is needed
-  const needsPrompt = useMemo(() => {
-    if (!generationType) return false;
-    return generationType.startsWith("text-to");
-  }, [generationType]);
-
-  // Apply model defaults when model changes
-  useEffect(() => {
-    if (selectedModel?.modelParameters?.defaults) {
-      const defaults = selectedModel.modelParameters.defaults;
-      
-      // Apply aspect_ratio if present
-      if (defaults.aspect_ratio && typeof defaults.aspect_ratio === 'string') {
-        setAspectRatio(defaults.aspect_ratio);
-      }
-      
-      // Apply resolution if present
-      if (defaults.resolution && typeof defaults.resolution === 'string') {
-        setResolution(defaults.resolution);
-      }
-      
-      // Apply duration if present
-      if (defaults.duration && typeof defaults.duration === 'string') {
-        const durationNum = parseInt(defaults.duration);
-        if (!isNaN(durationNum)) {
-          setDuration([durationNum]);
-        }
-      }
-      
-      // Apply enhance_prompt if present
-      if (typeof defaults.enhance_prompt === 'boolean') {
-        setEnhancePrompt(defaults.enhance_prompt);
-      }
-      
-      // Apply auto_fix if present
-      if (typeof defaults.auto_fix === 'boolean') {
-        setAutoFix(defaults.auto_fix);
-      }
+  const promptRequired = useMemo(() => {
+    if (selectedModel) {
+      return selectedModel.requiresPrompt !== false;
     }
-  }, [selectedModel]);
+    return generationType.startsWith("text-to");
+  }, [generationType, selectedModel]);
+
+  const requiredSettingMissing = useMemo(() => {
+    return selectedModelSettings.some((setting) => {
+      if (!setting.required) return false;
+      const value = modelSettings[setting.key];
+
+      switch (setting.type) {
+        case "toggle":
+          return typeof value !== "boolean";
+        case "select":
+          return value === undefined || value === "";
+        case "text":
+        case "textarea":
+          return typeof value !== "string" || value.trim().length === 0;
+        default:
+          return false;
+      }
+    });
+  }, [modelSettings, selectedModelSettings]);
+
+  const setSettingValue = useCallback(
+    (key: string, value: string | number | boolean) => {
+      setModelSettings((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    []
+  );
+
+  const setSettingIfAvailable = useCallback(
+    (key: string, value: string | number | boolean) => {
+      const setting = findSettingByKey(key);
+      if (!setting) return;
+
+      if (setting.type === "select") {
+        const match = setting.options.find(
+          (option) => String(option.value) === String(value)
+        );
+        if (!match) return;
+        setSettingValue(key, match.value);
+        return;
+      }
+
+      if (setting.type === "toggle") {
+        if (typeof value !== "boolean") return;
+        setSettingValue(key, value);
+        return;
+      }
+
+      setSettingValue(key, String(value));
+    },
+    [findSettingByKey, setSettingValue]
+  );
 
   // Update model when generation type changes
   const handleGenerationTypeChange = useCallback(
@@ -245,31 +284,43 @@ export function GenerationPanelV2({
   }, [selectedModel]);
 
   // Template handlers
-  const handleSelectPromptTemplate = useCallback((template: PromptTemplate) => {
-    setPrompt(template.prompt);
-    setNegativePrompt(template.negativePrompt);
-    toast.success(`Template "${template.name}" applied!`);
-  }, []);
+  const handleSelectPromptTemplate = useCallback(
+    (template: PromptTemplate) => {
+      setPrompt(template.prompt);
+      if (hasSetting("negative_prompt")) {
+        setSettingValue("negative_prompt", template.negativePrompt || "");
+      }
+      toast.success(`Template "${template.name}" applied!`);
+    },
+    [hasSetting, setSettingValue]
+  );
 
   const handleSelectProjectTemplate = useCallback(
     (template: ProjectTemplate) => {
       // Apply settings from template
       const settings = template.defaultSettings;
 
-      if (settings.imageSize) setImageSize(settings.imageSize);
-      if (settings.duration) setDuration([settings.duration]);
-      if (settings.fps) setFps([settings.fps]);
-      if (settings.steps) setSteps([settings.steps]);
-      if (settings.guidance) setGuidanceScale([settings.guidance]);
+      if (settings.imageSize)
+        setSettingIfAvailable("image_size", settings.imageSize);
+      if (settings.duration)
+        setSettingIfAvailable("duration", settings.duration);
+      if (settings.fps) setSettingIfAvailable("fps", settings.fps);
+      if (settings.steps)
+        setSettingIfAvailable("num_inference_steps", settings.steps);
+      if (settings.guidance)
+        setSettingIfAvailable("guidance_scale", settings.guidance);
 
       // Apply prompt templates if available
       if (template.promptTemplate) setPrompt(template.promptTemplate);
       if (template.negativePromptTemplate)
-        setNegativePrompt(template.negativePromptTemplate);
+        setSettingIfAvailable(
+          "negative_prompt",
+          template.negativePromptTemplate
+        );
 
       toast.success(`Project template "${template.name}" loaded!`);
     },
-    []
+    [setSettingIfAvailable]
   );
 
   const handleGenerate = async () => {
@@ -280,9 +331,16 @@ export function GenerationPanelV2({
       return;
     }
 
-    if (needsPrompt && !prompt.trim()) {
+    if (promptRequired && !prompt.trim()) {
       toast.error("Prompt required", {
         description: "Please describe what you want to generate",
+      });
+      return;
+    }
+
+    if (requiredSettingMissing) {
+      toast.error("Model settings incomplete", {
+        description: "Fill in all required model fields",
       });
       return;
     }
@@ -297,6 +355,27 @@ export function GenerationPanelV2({
     setIsGenerating(true);
 
     try {
+      const parameterPayload = selectedModelSettings.reduce<
+        Record<string, unknown>
+      >((acc, setting) => {
+        const value = modelSettings[setting.key];
+        if (value === undefined) return acc;
+
+        if (setting.type === "text" || setting.type === "textarea") {
+          if (typeof value !== "string") return acc;
+          const trimmed = value.trim();
+          if (!trimmed && !setting.required) return acc;
+          acc[setting.key] = trimmed;
+          return acc;
+        }
+
+        acc[setting.key] = value;
+        return acc;
+      }, {});
+
+      const parameters =
+        Object.keys(parameterPayload).length > 0 ? parameterPayload : undefined;
+
       // Upload reference files to fal.ai storage
       const uploadedUrls: Record<string, string | undefined> = {};
 
@@ -319,30 +398,11 @@ export function GenerationPanelV2({
         projectId,
         generationType,
         prompt: prompt || undefined,
-        negativePrompt: negativePrompt || undefined,
         referenceImageUrl: uploadedUrls["reference-image"],
         firstFrameUrl: uploadedUrls["first-frame"],
         lastFrameUrl: uploadedUrls["last-frame"],
         referenceVideoUrl: uploadedUrls["reference-video"],
-        parameters: {
-          // Image-specific
-          imageSize: selectedModel.type === "image" ? imageSize : undefined,
-          
-          // Video-specific
-          duration: selectedModel.type === "video" ? duration[0] : undefined,
-          fps: selectedModel.type === "video" ? fps[0] : undefined,
-          
-          // Veo-specific parameters (if model supports them)
-          aspect_ratio: selectedModel.modelParameters?.defaults?.aspect_ratio !== undefined ? aspectRatio : undefined,
-          resolution: selectedModel.modelParameters?.defaults?.resolution !== undefined ? resolution : undefined,
-          enhance_prompt: selectedModel.modelParameters?.defaults?.enhance_prompt !== undefined ? enhancePrompt : undefined,
-          auto_fix: selectedModel.modelParameters?.defaults?.auto_fix !== undefined ? autoFix : undefined,
-          
-          // Common parameters
-          numInferenceSteps: steps[0],
-          guidanceScale: guidanceScale[0],
-          seed: randomSeed ? undefined : seed,
-        },
+        parameters,
       });
 
       showStudioSuccess(
@@ -353,13 +413,13 @@ export function GenerationPanelV2({
 
       // Reset form
       setPrompt("");
-      setNegativePrompt("");
       setReferenceInputs({
         "reference-image": null,
         "first-frame": null,
         "last-frame": null,
         "reference-video": null,
       });
+      setModelSettings(buildDefaultSettings(selectedModel));
 
       // Call completion callback to refresh UI
       onGenerationComplete?.();
@@ -372,10 +432,17 @@ export function GenerationPanelV2({
 
   const canGenerate = useMemo(() => {
     if (!selectedModel) return false;
-    if (needsPrompt && !prompt.trim()) return false;
+    if (promptRequired && !prompt.trim()) return false;
     if (!hasAllRequiredInputs) return false;
+    if (requiredSettingMissing) return false;
     return true;
-  }, [selectedModel, needsPrompt, prompt, hasAllRequiredInputs]);
+  }, [
+    selectedModel,
+    promptRequired,
+    prompt,
+    hasAllRequiredInputs,
+    requiredSettingMissing,
+  ]);
 
   return (
     <ScrollArea className="h-full">
@@ -579,7 +646,7 @@ export function GenerationPanelV2({
               size="sm"
               variant="outline"
             >
-              <Wand2 className="h-3.5 w-3.5 text-muted-foreground" />
+              <Layers className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="font-medium text-[10px]">Project Templates</span>
               <span className="text-muted-foreground text-[9px]">
                 Pre-configured setups
@@ -589,7 +656,7 @@ export function GenerationPanelV2({
         </div>
 
         {/* Prompt - Only show if needed */}
-        {needsPrompt && (
+        {promptRequired && (
           <>
             <Separator />
             <div className="space-y-2">
@@ -631,311 +698,173 @@ export function GenerationPanelV2({
           </>
         )}
 
-        {/* Advanced Settings - Accordion */}
-        <Separator />
-        <Accordion collapsible defaultValue="advanced" type="single">
-          <AccordionItem className="border-none" value="advanced">
-            <AccordionTrigger className="py-2 hover:no-underline">
-              <span className="font-medium text-xs">Advanced Settings</span>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-3 pt-1">
-              {/* Negative Prompt */}
-              <div className="space-y-1.5">
-                <Label className="text-[10px]" htmlFor="negative-prompt">
-                  Negative Prompt
-                </Label>
-                <Textarea
-                  className="resize-none text-xs"
-                  disabled={isGenerating}
-                  id="negative-prompt"
-                  onChange={(e) => setNegativePrompt(e.target.value)}
-                  placeholder="What to avoid in the generation..."
-                  rows={2}
-                  value={negativePrompt}
-                />
+        {selectedModelSettings.length > 0 && (
+          <>
+            <Separator />
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-medium text-xs">Model Settings</Label>
+                <Badge className="px-1.5 py-0 text-[10px]" variant="outline">
+                  {selectedModelSettings.length} fields
+                </Badge>
               </div>
+              <div className="space-y-3">
+                {selectedModelSettings.map((setting) => {
+                  const value = modelSettings[setting.key];
 
-              {/* Image Size - Only for image models */}
-              {selectedModel?.type === "image" && (
-                <div className="space-y-1.5">
-                  <Label className="text-[10px]" htmlFor="image-size">
-                    Image Size
-                  </Label>
-                  <Select
-                    disabled={isGenerating}
-                    onValueChange={setImageSize}
-                    value={imageSize}
-                  >
-                    <SelectTrigger className="h-8 text-xs" id="image-size">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="square">Square (1:1)</SelectItem>
-                      <SelectItem value="square_hd">Square HD (1:1)</SelectItem>
-                      <SelectItem value="portrait_4_3">
-                        Portrait (4:3)
-                      </SelectItem>
-                      <SelectItem value="portrait_16_9">
-                        Portrait (16:9)
-                      </SelectItem>
-                      <SelectItem value="landscape_4_3">
-                        Landscape (4:3)
-                      </SelectItem>
-                      <SelectItem value="landscape_16_9">
-                        Landscape (16:9)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Aspect Ratio - For video models that support it */}
-              {selectedModel?.type === "video" && 
-               selectedModel.modelParameters?.defaults?.aspect_ratio !== undefined && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px]" htmlFor="aspect-ratio">
-                      Aspect Ratio
-                    </Label>
-                    {selectedModel.modelParameters.defaults.aspect_ratio && (
-                      <Badge className="px-1.5 py-0 text-[9px]" variant="secondary">
-                        Default: {String(selectedModel.modelParameters.defaults.aspect_ratio)}
-                      </Badge>
-                    )}
-                  </div>
-                  <Select
-                    disabled={isGenerating}
-                    onValueChange={setAspectRatio}
-                    value={aspectRatio}
-                  >
-                    <SelectTrigger className="h-8 text-xs" id="aspect-ratio">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">Auto</SelectItem>
-                      <SelectItem value="16:9">16:9 (Landscape)</SelectItem>
-                      <SelectItem value="9:16">9:16 (Portrait)</SelectItem>
-                      <SelectItem value="1:1">1:1 (Square)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Resolution - For video models that support it */}
-              {selectedModel?.type === "video" && 
-               selectedModel.modelParameters?.defaults?.resolution !== undefined && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px]" htmlFor="resolution">
-                      Resolution
-                    </Label>
-                    {selectedModel.modelParameters.defaults.resolution && (
-                      <Badge className="px-1.5 py-0 text-[9px]" variant="secondary">
-                        Default: {String(selectedModel.modelParameters.defaults.resolution)}
-                      </Badge>
-                    )}
-                  </div>
-                  <Select
-                    disabled={isGenerating}
-                    onValueChange={setResolution}
-                    value={resolution}
-                  >
-                    <SelectTrigger className="h-8 text-xs" id="resolution">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="720p">720p (HD)</SelectItem>
-                      <SelectItem value="1080p">1080p (Full HD)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Duration - Only for video models */}
-              {selectedModel?.type === "video" && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px]">Duration (seconds)</Label>
-                    <span className="text-muted-foreground text-[10px]">
-                      {duration[0]}s
-                    </span>
-                  </div>
-                  <Slider
-                    disabled={isGenerating}
-                    max={30}
-                    min={1}
-                    onValueChange={setDuration}
-                    step={1}
-                    value={duration}
-                  />
-                  {selectedModel.modelParameters?.defaults?.duration !== undefined && (
-                    <p className="text-muted-foreground text-[9px]">
-                      Recommended: {String(selectedModel.modelParameters.defaults.duration)}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* FPS - Only for video models */}
-              {selectedModel?.type === "video" && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-[10px]">FPS (Frames Per Second)</Label>
-                    <span className="text-muted-foreground text-[10px]">
-                      {fps[0]} fps
-                    </span>
-                  </div>
-                  <Slider
-                    disabled={isGenerating}
-                    max={60}
-                    min={12}
-                    onValueChange={setFps}
-                    step={6}
-                    value={fps}
-                  />
-                </div>
-              )}
-
-              {/* Enhance Prompt - Only for models that support it */}
-              {selectedModel?.modelParameters?.defaults?.enhance_prompt !== undefined && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-[10px]" htmlFor="enhance-prompt">
-                        Enhance Prompt
-                      </Label>
-                      <p className="text-muted-foreground text-[9px]">
-                        Automatically improve prompt quality
-                      </p>
-                    </div>
-                    <Switch
-                      checked={enhancePrompt}
-                      disabled={isGenerating}
-                      id="enhance-prompt"
-                      onCheckedChange={setEnhancePrompt}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Auto Fix - Only for models that support it */}
-              {selectedModel?.modelParameters?.defaults?.auto_fix !== undefined && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label className="text-[10px]" htmlFor="auto-fix">
-                        Auto Fix
-                      </Label>
-                      <p className="text-muted-foreground text-[9px]">
-                        Automatically fix prompt policy violations
-                      </p>
-                    </div>
-                    <Switch
-                      checked={autoFix}
-                      disabled={isGenerating}
-                      id="auto-fix"
-                      onCheckedChange={setAutoFix}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Fixed Parameters Info */}
-              {selectedModel?.modelParameters?.fixed && Object.keys(selectedModel.modelParameters.fixed).length > 0 && (
-                <Card className="border-border bg-muted/30">
-                  <CardContent className="px-2.5 pt-2.5 pb-2">
-                    <div className="flex items-start gap-1.5">
-                      <Info className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
-                      <div className="space-y-0.5">
-                        <p className="font-medium text-foreground text-[10px]">
-                          Fixed Parameters
-                        </p>
-                        <p className="text-muted-foreground text-[10px] leading-tight">
-                          {Object.entries(selectedModel.modelParameters.fixed).map(([key, value]) => (
-                            <span key={key} className="block">
-                              {key}: {String(value)}
-                            </span>
-                          ))}
-                        </p>
+                  if (setting.type === "select") {
+                    const selectValue =
+                      value !== undefined
+                        ? String(value)
+                        : String(setting.defaultValue);
+                    return (
+                      <div className="space-y-1.5" key={setting.key}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Label className="text-[10px]">
+                              {setting.label}
+                            </Label>
+                            {setting.required && (
+                              <Badge
+                                className="px-1 py-0 text-[9px]"
+                                variant="destructive"
+                              >
+                                Required
+                              </Badge>
+                            )}
+                          </div>
+                          <Badge
+                            className="px-1.5 py-0 text-[9px]"
+                            variant="secondary"
+                          >
+                            Default: {String(setting.defaultValue)}
+                          </Badge>
+                        </div>
+                        <Select
+                          disabled={isGenerating}
+                          onValueChange={(val) => {
+                            const option = setting.options.find(
+                              (opt) => String(opt.value) === val
+                            );
+                            setSettingValue(
+                              setting.key,
+                              option ? option.value : val
+                            );
+                          }}
+                          value={selectValue}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {setting.options.map((option) => (
+                              <SelectItem
+                                key={String(option.value)}
+                                value={String(option.value)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {setting.helperText && (
+                          <p className="text-muted-foreground text-[9px]">
+                            {setting.helperText}
+                          </p>
+                        )}
                       </div>
+                    );
+                  }
+
+                  if (setting.type === "toggle") {
+                    const checked =
+                      typeof value === "boolean" ? value : Boolean(value);
+                    return (
+                      <div className="space-y-1.5" key={setting.key}>
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label className="text-[10px]">
+                              {setting.label}
+                            </Label>
+                            {setting.required && (
+                              <Badge
+                                className="px-1 py-0 text-[9px]"
+                                variant="destructive"
+                              >
+                                Required
+                              </Badge>
+                            )}
+                            {setting.helperText && (
+                              <p className="text-muted-foreground text-[9px]">
+                                {setting.helperText}
+                              </p>
+                            )}
+                          </div>
+                          <Switch
+                            checked={checked}
+                            disabled={isGenerating}
+                            onCheckedChange={(val) =>
+                              setSettingValue(setting.key, val)
+                            }
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  const isTextarea = setting.type === "textarea";
+                  const textValue =
+                    typeof value === "string" ? value : setting.defaultValue || "";
+
+                  return (
+                    <div className="space-y-1.5" key={setting.key}>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px]">
+                          {setting.label}
+                          {setting.required && (
+                            <Badge
+                              className="ml-1 px-1 py-0 text-[9px]"
+                              variant="destructive"
+                            >
+                              Required
+                            </Badge>
+                          )}
+                        </Label>
+                      </div>
+                      {isTextarea ? (
+                        <Textarea
+                          className="resize-none text-xs"
+                          disabled={isGenerating}
+                          onChange={(e) =>
+                            setSettingValue(setting.key, e.target.value)
+                          }
+                          placeholder={setting.placeholder}
+                          rows={3}
+                          value={textValue as string}
+                        />
+                      ) : (
+                        <Input
+                          className="h-8 text-xs"
+                          disabled={isGenerating}
+                          onChange={(e) =>
+                            setSettingValue(setting.key, e.target.value)
+                          }
+                          placeholder={setting.placeholder}
+                          value={textValue as string}
+                        />
+                      )}
+                      {setting.helperText && (
+                        <p className="text-muted-foreground text-[9px]">
+                          {setting.helperText}
+                        </p>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Inference Steps */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[10px]">Inference Steps</Label>
-                  <span className="text-muted-foreground text-[10px]">
-                    {steps[0]}
-                  </span>
-                </div>
-                <Slider
-                  disabled={isGenerating}
-                  max={50}
-                  min={1}
-                  onValueChange={setSteps}
-                  step={1}
-                  value={steps}
-                />
-                <p className="text-muted-foreground text-[9px]">
-                  More steps = better quality but slower generation
-                </p>
+                  );
+                })}
               </div>
-
-              {/* Guidance Scale */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[10px]">Guidance Scale</Label>
-                  <span className="text-muted-foreground text-[10px]">
-                    {guidanceScale[0]}
-                  </span>
-                </div>
-                <Slider
-                  disabled={isGenerating}
-                  max={20}
-                  min={1}
-                  onValueChange={setGuidanceScale}
-                  step={0.5}
-                  value={guidanceScale}
-                />
-                <p className="text-muted-foreground text-[9px]">
-                  Higher values = more adherence to prompt
-                </p>
-              </div>
-
-              {/* Seed */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[10px]" htmlFor="random-seed">
-                    Random Seed
-                  </Label>
-                  <Switch
-                    checked={randomSeed}
-                    disabled={isGenerating}
-                    id="random-seed"
-                    onCheckedChange={setRandomSeed}
-                  />
-                </div>
-                {!randomSeed && (
-                  <Input
-                    className="h-8 text-xs"
-                    disabled={isGenerating}
-                    onChange={(e) =>
-                      setSeed(
-                        e.target.value ? Number(e.target.value) : undefined
-                      )
-                    }
-                    placeholder="Enter seed..."
-                    type="number"
-                    value={seed || ""}
-                  />
-                )}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+            </div>
+          </>
+        )}
 
         {/* Validation Warning */}
         {!canGenerate && !isGenerating && (
@@ -950,12 +879,15 @@ export function GenerationPanelV2({
                   <p className="text-muted-foreground text-[10px] leading-tight">
                     {!selectedModel && "Please select a model"}
                     {selectedModel &&
-                      needsPrompt &&
+                      promptRequired &&
                       !prompt.trim() &&
                       "Please enter a prompt"}
                     {selectedModel &&
                       !hasAllRequiredInputs &&
                       "Please provide all required inputs"}
+                    {selectedModel &&
+                      requiredSettingMissing &&
+                      "Fill the highlighted model settings"}
                   </p>
                 </div>
               </div>

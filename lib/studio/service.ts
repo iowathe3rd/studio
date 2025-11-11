@@ -160,73 +160,44 @@ export class StudioService {
             input.video_id = request.videoId;
         }
 
-        // Apply model-specific default parameters first
-        if (model.modelParameters?.defaults) {
-            Object.assign(input, model.modelParameters.defaults);
-        }
-
         // Parameters from request (override defaults)
         if (request.parameters) {
             const params = request.parameters;
+            const handledKeys = new Set<string>();
 
             // Map common Studio parameters to fal.ai format
             if (params.imageSize) {
                 input.image_size = params.imageSize as any;
+                handledKeys.add("imageSize");
             }
             if (params.numInferenceSteps) {
                 input.num_inference_steps = params.numInferenceSteps as number;
+                handledKeys.add("numInferenceSteps");
             }
             if (params.guidanceScale) {
                 input.guidance_scale = params.guidanceScale as number;
-            }
-            if (params.duration) {
-                input.duration = params.duration as number;
+                handledKeys.add("guidanceScale");
             }
             if (params.fps) {
                 input.fps = params.fps as number;
+                handledKeys.add("fps");
             }
             if (params.seed !== undefined) {
                 input.seed = params.seed as number;
+                handledKeys.add("seed");
             }
 
-            // Veo-specific parameters (already in correct format)
-            if (params.aspect_ratio !== undefined) {
-                input.aspect_ratio = params.aspect_ratio as string;
-            }
-            if (params.resolution !== undefined) {
-                input.resolution = params.resolution as string;
-            }
-            if (params.enhance_prompt !== undefined) {
-                input.enhance_prompt = params.enhance_prompt as boolean;
-            }
-            if (params.auto_fix !== undefined) {
-                input.auto_fix = params.auto_fix as boolean;
-            }
-
-            // Pass through any other parameters
             for (const [key, value] of Object.entries(params)) {
-                if (
-                    ![
-                        "imageSize",
-                        "numInferenceSteps",
-                        "guidanceScale",
-                        "duration",
-                        "fps",
-                        "seed",
-                        "aspect_ratio",
-                        "resolution",
-                        "enhance_prompt",
-                        "auto_fix",
-                    ].includes(key)
-                ) {
-                    input[key] = value;
-                }
+                if (handledKeys.has(key) || value === undefined) continue;
+                input[key] = value as never;
             }
         }
 
-        // Apply model-specific fixed parameters last (cannot be overridden)
-        if (model.modelParameters?.fixed) {
-            Object.assign(input, model.modelParameters.fixed);
+        if (
+            model.id.includes("reference-to-video") &&
+            request.referenceImageUrl
+        ) {
+            input.image_urls = [request.referenceImageUrl];
         }
 
         return input;

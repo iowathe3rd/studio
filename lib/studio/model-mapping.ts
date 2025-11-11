@@ -61,7 +61,6 @@ export function inferGenerationType(
   if (
     model.type === "video" &&
     hasImageInput &&
-    !requiresFirstLastFrame &&
     !requiresReferenceVideo &&
     (modelId.includes("image-to-video") || description.includes("animate"))
   ) {
@@ -71,9 +70,9 @@ export function inferGenerationType(
   // Video-to-Video
   if (
     model.type === "video" &&
-    (hasVideoInput || requiresReferenceVideo) &&
-    (modelId.includes("video-to-video") ||
-      modelId.includes("remix") ||
+    (hasVideoInput ||
+      requiresReferenceVideo ||
+      modelId.includes("video-to-video") ||
       description.includes("video-to-video"))
   ) {
     types.push("video-to-video");
@@ -154,30 +153,29 @@ export function getRecommendedModels(
 
   // Приоритеты для рекомендаций
   const priorities = {
-    "text-to-image": [
-      "fal-ai/flux/dev",
-      "fal-ai/flux/ultra",
-      "fal-ai/flux/realism",
-    ],
+    "text-to-image": [],
     "text-to-video": [
-      "veo3.1",
-      "sora-2/text-to-video",
-      "fal-ai/runway-gen3/turbo",
-      "fal-ai/mochi/mochi-1",
+      "fal-ai/veo3.1",
+      "fal-ai/veo3.1/fast",
+      "fal-ai/sora-2/text-to-video/pro",
+      "fal-ai/sora-2/text-to-video",
     ],
-    "image-to-image": [
-      "flux-kontext-lora/image-to-image",
-      "flux-pro/kontext/image-to-image",
-    ],
+    "image-to-image": [],
     "image-to-video": [
-      "veo3.1/image-to-video",
-      "sora-2/image-to-video",
-      "fal-ai/runway-gen3/turbo/image-to-video",
+      "fal-ai/sora-2/image-to-video/pro",
+      "fal-ai/sora-2/image-to-video",
+      "fal-ai/veo3.1/image-to-video",
+      "fal-ai/veo3.1/fast/image-to-video",
     ],
-    "video-to-video": ["sora-2/video-to-video/remix", "reve-edit"],
-    inpaint: ["flux-kontext-lora/inpaint"],
-    lipsync: ["creatify/lipsync", "minimax/lipsync", "pixverse/lipsync"],
-  };
+    "video-to-video": [
+      "fal-ai/sora-2/video-to-video/remix",
+      "fal-ai/veo3.1/reference-to-video",
+      "fal-ai/veo3.1/first-last-frame-to-video",
+      "fal-ai/veo3.1/fast/first-last-frame-to-video",
+    ],
+    inpaint: [],
+    lipsync: [],
+  } as Record<StudioGenerationType, string[]>;
 
   const priorityIds = priorities[type] || [];
 
