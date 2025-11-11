@@ -1,12 +1,12 @@
-# Veo 3.1 Fast
+# FLUX.1 [pro]
 
-> Generate videos from a first/last frame using Google's Veo 3.1 Fast
+> FLUX.1 [pro] new is an accelerated version of FLUX.1 [pro], maintaining professional-grade image quality while delivering significantly faster generation speeds.
 
 ## Overview
 
-- **Endpoint**: `https://fal.run/fal-ai/veo3.1/fast/first-last-frame-to-video`
-- **Model ID**: `fal-ai/veo3.1/fast/first-last-frame-to-video`
-- **Category**: image-to-video
+- **Endpoint**: `https://fal.run/fal-ai/flux-pro/new`
+- **Model ID**: `fal-ai/flux-pro/new`
+- **Category**: text-to-image
 - **Kind**: inference
 
 ## API Information
@@ -18,50 +18,66 @@ See the input and output schema below, as well as the usage examples.
 
 The API accepts the following input parameters:
 
-- **`first_frame_url`** (`string`, _required_):
-  URL of the first frame of the video
-
-  - Examples: "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg"
-
-- **`last_frame_url`** (`string`, _required_):
-  URL of the last frame of the video
-
-  - Examples: "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg"
-
 - **`prompt`** (`string`, _required_):
-  The text prompt describing the video you want to generate
+  The prompt to generate an image from.
 
-  - Examples: "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+  - Examples: "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
 
-- **`duration`** (`DurationEnum`, _optional_):
-  The duration of the generated video in seconds Default value: `"8s"`
+- **`image_size`** (`ImageSize | Enum`, _optional_):
+  The size of the generated image. Default value: `landscape_4_3`
 
-  - Default: `"8s"`
-  - Options: `"4s"`, `"6s"`, `"8s"`
+  - Default: `"landscape_4_3"`
+  - One of: ImageSize | Enum
 
-- **`aspect_ratio`** (`AspectRatioEnum`, _optional_):
-  Aspect ratio of the generated video Default value: `"auto"`
+- **`num_inference_steps`** (`integer`, _optional_):
+  The number of inference steps to perform. Default value: `28`
 
-  - Default: `"auto"`
-  - Options: `"auto"`, `"9:16"`, `"16:9"`, `"1:1"`
+  - Default: `28`
+  - Range: `1` to `50`
 
-- **`resolution`** (`ResolutionEnum`, _optional_):
-  Resolution of the generated video Default value: `"720p"`
+- **`seed`** (`integer`, _optional_):
+  The same seed and the same prompt given to the same version of the model
+  will output the same image every time.
 
-  - Default: `"720p"`
-  - Options: `"720p"`, `"1080p"`
+- **`guidance_scale`** (`float`, _optional_):
+  The CFG (Classifier Free Guidance) scale is a measure of how close you want
+  the model to stick to your prompt when looking for a related image to show you. Default value: `3.5`
 
-- **`generate_audio`** (`boolean`, _optional_):
-  Whether to generate audio for the video. If false, 33% less credits will be used. Default value: `true`
-  - Default: `true`
+  - Default: `3.5`
+  - Range: `1` to `20`
+
+- **`sync_mode`** (`boolean`, _optional_):
+  If `True`, the media will be returned as a data URI and the output data won't be available in the request history.
+
+  - Default: `false`
+
+- **`num_images`** (`integer`, _optional_):
+  The number of images to generate. Default value: `1`
+
+  - Default: `1`
+  - Range: `1` to `4`
+
+- **`output_format`** (`OutputFormatEnum`, _optional_):
+  The format of the generated image. Default value: `"jpeg"`
+
+  - Default: `"jpeg"`
+  - Options: `"jpeg"`, `"png"`
+
+- **`safety_tolerance`** (`SafetyToleranceEnum`, _optional_):
+  The safety tolerance level for the generated image. 1 being the most strict and 5 being the most permissive. Default value: `"2"`
+
+  - Default: `"2"`
+  - Options: `"1"`, `"2"`, `"3"`, `"4"`, `"5"`, `"6"`
+
+- **`enhance_prompt`** (`boolean`, _optional_):
+  Whether to enhance the prompt for better results.
+  - Default: `false`
 
 **Required Parameters Example**:
 
 ```json
 {
-  "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-  "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-  "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
 }
 ```
 
@@ -69,13 +85,13 @@ The API accepts the following input parameters:
 
 ```json
 {
-  "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-  "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-  "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\"",
-  "duration": "8s",
-  "aspect_ratio": "auto",
-  "resolution": "720p",
-  "generate_audio": true
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture.",
+  "image_size": "landscape_4_3",
+  "num_inference_steps": 28,
+  "guidance_scale": 3.5,
+  "num_images": 1,
+  "output_format": "jpeg",
+  "safety_tolerance": "2"
 }
 ```
 
@@ -83,17 +99,36 @@ The API accepts the following input parameters:
 
 The API returns the following output format:
 
-- **`video`** (`File`, _required_):
-  The generated video
-  - Examples: {"url":"https://storage.googleapis.com/falserverless/example_outputs/veo31-flf2v-output.mp4"}
+- **`images`** (`list<registry__image__fast_sdxl__models__Image>`, _required_):
+  The generated image files info.
+
+  - Array of registry**image**fast_sdxl**models**Image
+
+- **`timings`** (`Timings`, _required_)
+
+- **`seed`** (`integer`, _required_):
+  Seed of the generated Image. It will be the same value of the one passed in the
+  input or the randomly generated that was used in case none was passed.
+
+- **`has_nsfw_concepts`** (`list<boolean>`, _required_):
+  Whether the generated images contain NSFW concepts.
+
+  - Array of boolean
+
+- **`prompt`** (`string`, _required_):
+  The prompt used for generating the image.
 
 **Example Response**:
 
 ```json
 {
-  "video": {
-    "url": "https://storage.googleapis.com/falserverless/example_outputs/veo31-flf2v-output.mp4"
-  }
+  "images": [
+    {
+      "url": "",
+      "content_type": "image/jpeg"
+    }
+  ],
+  "prompt": ""
 }
 ```
 
@@ -103,13 +138,11 @@ The API returns the following output format:
 
 ```bash
 curl --request POST \
-  --url https://fal.run/fal-ai/veo3.1/fast/first-last-frame-to-video \
+  --url https://fal.run/fal-ai/flux-pro/new \
   --header "Authorization: Key $FAL_KEY" \
   --header "Content-Type: application/json" \
   --data '{
-     "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-     "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-     "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+     "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
    }'
 ```
 
@@ -132,11 +165,9 @@ def on_queue_update(update):
            print(log["message"])
 
 result = fal_client.subscribe(
-    "fal-ai/veo3.1/fast/first-last-frame-to-video",
+    "fal-ai/flux-pro/new",
     arguments={
-        "first_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-        "last_frame_url": "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-        "prompt": "A woman looks into the camera, breathes in, then exclaims energetically, \"have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It's incredible!\""
+        "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
     },
     with_logs=True,
     on_queue_update=on_queue_update,
@@ -157,25 +188,18 @@ Then use the API client to make requests:
 ```javascript
 import { fal } from "@fal-ai/client";
 
-const result = await fal.subscribe(
-  "fal-ai/veo3.1/fast/first-last-frame-to-video",
-  {
-    input: {
-      first_frame_url:
-        "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-1.jpeg",
-      last_frame_url:
-        "https://storage.googleapis.com/falserverless/example_inputs/veo31-flf2v-input-2.jpeg",
-      prompt:
-        'A woman looks into the camera, breathes in, then exclaims energetically, "have you guys checked out Veo3.1 First-Last-Frame-to-Video on Fal? It\'s incredible!"',
-    },
-    logs: true,
-    onQueueUpdate: (update) => {
-      if (update.status === "IN_PROGRESS") {
-        update.logs.map((log) => log.message).forEach(console.log);
-      }
-    },
-  }
-);
+const result = await fal.subscribe("fal-ai/flux-pro/new", {
+  input: {
+    prompt:
+      'Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word "FLUX" is painted over it in big, white brush strokes with visible texture.',
+  },
+  logs: true,
+  onQueueUpdate: (update) => {
+    if (update.status === "IN_PROGRESS") {
+      update.logs.map((log) => log.message).forEach(console.log);
+    }
+  },
+});
 console.log(result.data);
 console.log(result.requestId);
 ```
@@ -184,9 +208,667 @@ console.log(result.requestId);
 
 ### Documentation
 
-- [Model Playground](https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video)
-- [API Documentation](https://fal.ai/models/fal-ai/veo3.1/fast/first-last-frame-to-video/api)
-- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/veo3.1/fast/first-last-frame-to-video)
+- [Model Playground](https://fal.ai/models/fal-ai/flux-pro/new)
+- [API Documentation](https://fal.ai/models/fal-ai/flux-pro/new/api)
+- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/flux-pro/new)
+
+### fal.ai Platform
+
+- [Platform Documentation](https://docs.fal.ai)
+- [Python Client](https://docs.fal.ai/clients/python)
+- [JavaScript Client](https://docs.fal.ai/clients/javascript)
+
+# FLUX.1 [pro]
+
+> FLUX.1 [pro] new is an accelerated version of FLUX.1 [pro], maintaining professional-grade image quality while delivering significantly faster generation speeds.
+
+## Overview
+
+- **Endpoint**: `https://fal.run/fal-ai/flux-pro/new`
+- **Model ID**: `fal-ai/flux-pro/new`
+- **Category**: text-to-image
+- **Kind**: inference
+
+## API Information
+
+This model can be used via our HTTP API or more conveniently via our client libraries.
+See the input and output schema below, as well as the usage examples.
+
+### Input Schema
+
+The API accepts the following input parameters:
+
+- **`prompt`** (`string`, _required_):
+  The prompt to generate an image from.
+
+  - Examples: "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+
+- **`image_size`** (`ImageSize | Enum`, _optional_):
+  The size of the generated image. Default value: `landscape_4_3`
+
+  - Default: `"landscape_4_3"`
+  - One of: ImageSize | Enum
+
+- **`num_inference_steps`** (`integer`, _optional_):
+  The number of inference steps to perform. Default value: `28`
+
+  - Default: `28`
+  - Range: `1` to `50`
+
+- **`seed`** (`integer`, _optional_):
+  The same seed and the same prompt given to the same version of the model
+  will output the same image every time.
+
+- **`guidance_scale`** (`float`, _optional_):
+  The CFG (Classifier Free Guidance) scale is a measure of how close you want
+  the model to stick to your prompt when looking for a related image to show you. Default value: `3.5`
+
+  - Default: `3.5`
+  - Range: `1` to `20`
+
+- **`sync_mode`** (`boolean`, _optional_):
+  If `True`, the media will be returned as a data URI and the output data won't be available in the request history.
+
+  - Default: `false`
+
+- **`num_images`** (`integer`, _optional_):
+  The number of images to generate. Default value: `1`
+
+  - Default: `1`
+  - Range: `1` to `4`
+
+- **`output_format`** (`OutputFormatEnum`, _optional_):
+  The format of the generated image. Default value: `"jpeg"`
+
+  - Default: `"jpeg"`
+  - Options: `"jpeg"`, `"png"`
+
+- **`safety_tolerance`** (`SafetyToleranceEnum`, _optional_):
+  The safety tolerance level for the generated image. 1 being the most strict and 5 being the most permissive. Default value: `"2"`
+
+  - Default: `"2"`
+  - Options: `"1"`, `"2"`, `"3"`, `"4"`, `"5"`, `"6"`
+
+- **`enhance_prompt`** (`boolean`, _optional_):
+  Whether to enhance the prompt for better results.
+  - Default: `false`
+
+**Required Parameters Example**:
+
+```json
+{
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+}
+```
+
+**Full Example**:
+
+```json
+{
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture.",
+  "image_size": "landscape_4_3",
+  "num_inference_steps": 28,
+  "guidance_scale": 3.5,
+  "num_images": 1,
+  "output_format": "jpeg",
+  "safety_tolerance": "2"
+}
+```
+
+### Output Schema
+
+The API returns the following output format:
+
+- **`images`** (`list<registry__image__fast_sdxl__models__Image>`, _required_):
+  The generated image files info.
+
+  - Array of registry**image**fast_sdxl**models**Image
+
+- **`timings`** (`Timings`, _required_)
+
+- **`seed`** (`integer`, _required_):
+  Seed of the generated Image. It will be the same value of the one passed in the
+  input or the randomly generated that was used in case none was passed.
+
+- **`has_nsfw_concepts`** (`list<boolean>`, _required_):
+  Whether the generated images contain NSFW concepts.
+
+  - Array of boolean
+
+- **`prompt`** (`string`, _required_):
+  The prompt used for generating the image.
+
+**Example Response**:
+
+```json
+{
+  "images": [
+    {
+      "url": "",
+      "content_type": "image/jpeg"
+    }
+  ],
+  "prompt": ""
+}
+```
+
+## Usage Examples
+
+### cURL
+
+```bash
+curl --request POST \
+  --url https://fal.run/fal-ai/flux-pro/new \
+  --header "Authorization: Key $FAL_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+     "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+   }'
+```
+
+### Python
+
+Ensure you have the Python client installed:
+
+```bash
+pip install fal-client
+```
+
+Then use the API client to make requests:
+
+```python
+import fal_client
+
+def on_queue_update(update):
+    if isinstance(update, fal_client.InProgress):
+        for log in update.logs:
+           print(log["message"])
+
+result = fal_client.subscribe(
+    "fal-ai/flux-pro/new",
+    arguments={
+        "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+    },
+    with_logs=True,
+    on_queue_update=on_queue_update,
+)
+print(result)
+```
+
+### JavaScript
+
+Ensure you have the JavaScript client installed:
+
+```bash
+npm install --save @fal-ai/client
+```
+
+Then use the API client to make requests:
+
+```javascript
+import { fal } from "@fal-ai/client";
+
+const result = await fal.subscribe("fal-ai/flux-pro/new", {
+  input: {
+    prompt:
+      'Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word "FLUX" is painted over it in big, white brush strokes with visible texture.',
+  },
+  logs: true,
+  onQueueUpdate: (update) => {
+    if (update.status === "IN_PROGRESS") {
+      update.logs.map((log) => log.message).forEach(console.log);
+    }
+  },
+});
+console.log(result.data);
+console.log(result.requestId);
+```
+
+## Additional Resources
+
+### Documentation
+
+- [Model Playground](https://fal.ai/models/fal-ai/flux-pro/new)
+- [API Documentation](https://fal.ai/models/fal-ai/flux-pro/new/api)
+- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/flux-pro/new)
+
+### fal.ai Platform
+
+- [Platform Documentation](https://docs.fal.ai)
+- [Python Client](https://docs.fal.ai/clients/python)
+- [JavaScript Client](https://docs.fal.ai/clients/javascript)
+
+# FLUX1.1 [pro]
+
+> FLUX1.1 [pro] is an enhanced version of FLUX.1 [pro], improved image generation capabilities, delivering superior composition, detail, and artistic fidelity compared to its predecessor.
+
+## Overview
+
+- **Endpoint**: `https://fal.run/fal-ai/flux-pro/v1.1`
+- **Model ID**: `fal-ai/flux-pro/v1.1`
+- **Category**: text-to-image
+- **Kind**: inference
+
+## API Information
+
+This model can be used via our HTTP API or more conveniently via our client libraries.
+See the input and output schema below, as well as the usage examples.
+
+### Input Schema
+
+The API accepts the following input parameters:
+
+- **`prompt`** (`string`, _required_):
+  The prompt to generate an image from.
+
+  - Examples: "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+
+- **`image_size`** (`ImageSize | Enum`, _optional_):
+  The size of the generated image. Default value: `landscape_4_3`
+
+  - Default: `"landscape_4_3"`
+  - One of: ImageSize | Enum
+
+- **`seed`** (`integer`, _optional_):
+  The same seed and the same prompt given to the same version of the model
+  will output the same image every time.
+
+- **`sync_mode`** (`boolean`, _optional_):
+  If `True`, the media will be returned as a data URI and the output data won't be available in the request history.
+
+  - Default: `false`
+
+- **`num_images`** (`integer`, _optional_):
+  The number of images to generate. Default value: `1`
+
+  - Default: `1`
+  - Range: `1` to `4`
+
+- **`enable_safety_checker`** (`boolean`, _optional_):
+  If set to true, the safety checker will be enabled. Default value: `true`
+
+  - Default: `true`
+
+- **`output_format`** (`OutputFormatEnum`, _optional_):
+  The format of the generated image. Default value: `"jpeg"`
+
+  - Default: `"jpeg"`
+  - Options: `"jpeg"`, `"png"`
+
+- **`safety_tolerance`** (`SafetyToleranceEnum`, _optional_):
+  The safety tolerance level for the generated image. 1 being the most strict and 5 being the most permissive. Default value: `"2"`
+
+  - Default: `"2"`
+  - Options: `"1"`, `"2"`, `"3"`, `"4"`, `"5"`, `"6"`
+
+- **`enhance_prompt`** (`boolean`, _optional_):
+  Whether to enhance the prompt for better results.
+  - Default: `false`
+
+**Required Parameters Example**:
+
+```json
+{
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+}
+```
+
+**Full Example**:
+
+```json
+{
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture.",
+  "image_size": "landscape_4_3",
+  "num_images": 1,
+  "enable_safety_checker": true,
+  "output_format": "jpeg",
+  "safety_tolerance": "2"
+}
+```
+
+### Output Schema
+
+The API returns the following output format:
+
+- **`images`** (`list<registry__image__fast_sdxl__models__Image>`, _required_):
+  The generated image files info.
+
+  - Array of registry**image**fast_sdxl**models**Image
+
+- **`timings`** (`Timings`, _required_)
+
+- **`seed`** (`integer`, _required_):
+  Seed of the generated Image. It will be the same value of the one passed in the
+  input or the randomly generated that was used in case none was passed.
+
+- **`has_nsfw_concepts`** (`list<boolean>`, _required_):
+  Whether the generated images contain NSFW concepts.
+
+  - Array of boolean
+
+- **`prompt`** (`string`, _required_):
+  The prompt used for generating the image.
+
+**Example Response**:
+
+```json
+{
+  "images": [
+    {
+      "url": "",
+      "content_type": "image/jpeg"
+    }
+  ],
+  "prompt": ""
+}
+```
+
+## Usage Examples
+
+### cURL
+
+```bash
+curl --request POST \
+  --url https://fal.run/fal-ai/flux-pro/v1.1 \
+  --header "Authorization: Key $FAL_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+     "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+   }'
+```
+
+### Python
+
+Ensure you have the Python client installed:
+
+```bash
+pip install fal-client
+```
+
+Then use the API client to make requests:
+
+```python
+import fal_client
+
+def on_queue_update(update):
+    if isinstance(update, fal_client.InProgress):
+        for log in update.logs:
+           print(log["message"])
+
+result = fal_client.subscribe(
+    "fal-ai/flux-pro/v1.1",
+    arguments={
+        "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+    },
+    with_logs=True,
+    on_queue_update=on_queue_update,
+)
+print(result)
+```
+
+### JavaScript
+
+Ensure you have the JavaScript client installed:
+
+```bash
+npm install --save @fal-ai/client
+```
+
+Then use the API client to make requests:
+
+```javascript
+import { fal } from "@fal-ai/client";
+
+const result = await fal.subscribe("fal-ai/flux-pro/v1.1", {
+  input: {
+    prompt:
+      'Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word "FLUX" is painted over it in big, white brush strokes with visible texture.',
+  },
+  logs: true,
+  onQueueUpdate: (update) => {
+    if (update.status === "IN_PROGRESS") {
+      update.logs.map((log) => log.message).forEach(console.log);
+    }
+  },
+});
+console.log(result.data);
+console.log(result.requestId);
+```
+
+## Additional Resources
+
+### Documentation
+
+- [Model Playground](https://fal.ai/models/fal-ai/flux-pro/v1.1)
+- [API Documentation](https://fal.ai/models/fal-ai/flux-pro/v1.1/api)
+- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/flux-pro/v1.1)
+
+### fal.ai Platform
+
+- [Platform Documentation](https://docs.fal.ai)
+- [Python Client](https://docs.fal.ai/clients/python)
+- [JavaScript Client](https://docs.fal.ai/clients/javascript)
+
+# FLUX1.1 [pro] ultra
+
+> FLUX1.1 [pro] ultra is the newest version of FLUX1.1 [pro], maintaining professional-grade image quality while delivering up to 2K resolution with improved photo realism.
+
+## Overview
+
+- **Endpoint**: `https://fal.run/fal-ai/flux-pro/v1.1-ultra`
+- **Model ID**: `fal-ai/flux-pro/v1.1-ultra`
+- **Category**: text-to-image
+- **Kind**: inference
+  **Tags**: high-res, realism
+
+## API Information
+
+This model can be used via our HTTP API or more conveniently via our client libraries.
+See the input and output schema below, as well as the usage examples.
+
+### Input Schema
+
+The API accepts the following input parameters:
+
+- **`prompt`** (`string`, _required_):
+  The prompt to generate an image from.
+
+  - Examples: "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+
+- **`seed`** (`integer`, _optional_):
+  The same seed and the same prompt given to the same version of the model
+  will output the same image every time.
+
+- **`sync_mode`** (`boolean`, _optional_):
+  If `True`, the media will be returned as a data URI and the output data won't be available in the request history.
+
+  - Default: `false`
+
+- **`num_images`** (`integer`, _optional_):
+  The number of images to generate. Default value: `1`
+
+  - Default: `1`
+  - Range: `1` to `4`
+
+- **`enable_safety_checker`** (`boolean`, _optional_):
+  If set to true, the safety checker will be enabled. Default value: `true`
+
+  - Default: `true`
+
+- **`output_format`** (`OutputFormatEnum`, _optional_):
+  The format of the generated image. Default value: `"jpeg"`
+
+  - Default: `"jpeg"`
+  - Options: `"jpeg"`, `"png"`
+
+- **`safety_tolerance`** (`SafetyToleranceEnum`, _optional_):
+  The safety tolerance level for the generated image. 1 being the most strict and 5 being the most permissive. Default value: `"2"`
+
+  - Default: `"2"`
+  - Options: `"1"`, `"2"`, `"3"`, `"4"`, `"5"`, `"6"`
+
+- **`enhance_prompt`** (`boolean`, _optional_):
+  Whether to enhance the prompt for better results.
+
+  - Default: `false`
+
+- **`image_url`** (`string`, _optional_):
+  The image URL to generate an image from.
+
+- **`image_prompt_strength`** (`float`, _optional_):
+  The strength of the image prompt, between 0 and 1. Default value: `0.1`
+
+  - Default: `0.1`
+  - Range: `0` to `1`
+
+- **`aspect_ratio`** (`Enum | string`, _optional_):
+  The aspect ratio of the generated image. Default value: `16:9`
+
+  - Default: `"16:9"`
+  - One of: Enum | string
+
+- **`raw`** (`boolean`, _optional_):
+  Generate less processed, more natural-looking images.
+  - Default: `false`
+
+**Required Parameters Example**:
+
+```json
+{
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+}
+```
+
+**Full Example**:
+
+```json
+{
+  "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture.",
+  "num_images": 1,
+  "enable_safety_checker": true,
+  "output_format": "jpeg",
+  "safety_tolerance": "2",
+  "image_prompt_strength": 0.1,
+  "aspect_ratio": "16:9"
+}
+```
+
+### Output Schema
+
+The API returns the following output format:
+
+- **`images`** (`list<registry__image__fast_sdxl__models__Image>`, _required_):
+  The generated image files info.
+
+  - Array of registry**image**fast_sdxl**models**Image
+
+- **`timings`** (`Timings`, _required_)
+
+- **`seed`** (`integer`, _required_):
+  Seed of the generated Image. It will be the same value of the one passed in the
+  input or the randomly generated that was used in case none was passed.
+
+- **`has_nsfw_concepts`** (`list<boolean>`, _required_):
+  Whether the generated images contain NSFW concepts.
+
+  - Array of boolean
+
+- **`prompt`** (`string`, _required_):
+  The prompt used for generating the image.
+
+**Example Response**:
+
+```json
+{
+  "images": [
+    {
+      "url": "",
+      "content_type": "image/jpeg"
+    }
+  ],
+  "prompt": ""
+}
+```
+
+## Usage Examples
+
+### cURL
+
+```bash
+curl --request POST \
+  --url https://fal.run/fal-ai/flux-pro/v1.1-ultra \
+  --header "Authorization: Key $FAL_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{
+     "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+   }'
+```
+
+### Python
+
+Ensure you have the Python client installed:
+
+```bash
+pip install fal-client
+```
+
+Then use the API client to make requests:
+
+```python
+import fal_client
+
+def on_queue_update(update):
+    if isinstance(update, fal_client.InProgress):
+        for log in update.logs:
+           print(log["message"])
+
+result = fal_client.subscribe(
+    "fal-ai/flux-pro/v1.1-ultra",
+    arguments={
+        "prompt": "Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word \"FLUX\" is painted over it in big, white brush strokes with visible texture."
+    },
+    with_logs=True,
+    on_queue_update=on_queue_update,
+)
+print(result)
+```
+
+### JavaScript
+
+Ensure you have the JavaScript client installed:
+
+```bash
+npm install --save @fal-ai/client
+```
+
+Then use the API client to make requests:
+
+```javascript
+import { fal } from "@fal-ai/client";
+
+const result = await fal.subscribe("fal-ai/flux-pro/v1.1-ultra", {
+  input: {
+    prompt:
+      'Extreme close-up of a single tiger eye, direct frontal view. Detailed iris and pupil. Sharp focus on eye texture and color. Natural lighting to capture authentic eye shine and depth. The word "FLUX" is painted over it in big, white brush strokes with visible texture.',
+  },
+  logs: true,
+  onQueueUpdate: (update) => {
+    if (update.status === "IN_PROGRESS") {
+      update.logs.map((log) => log.message).forEach(console.log);
+    }
+  },
+});
+console.log(result.data);
+console.log(result.requestId);
+```
+
+## Additional Resources
+
+### Documentation
+
+- [Model Playground](https://fal.ai/models/fal-ai/flux-pro/v1.1-ultra)
+- [API Documentation](https://fal.ai/models/fal-ai/flux-pro/v1.1-ultra/api)
+- [OpenAPI Schema](https://fal.ai/api/openapi/queue/openapi.json?endpoint_id=fal-ai/flux-pro/v1.1-ultra)
 
 ### fal.ai Platform
 
