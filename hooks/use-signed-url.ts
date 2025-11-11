@@ -11,6 +11,7 @@ interface UseSignedUrlOptions {
     format?: "origin" | "webp" | "avif";
     resize?: "cover" | "contain" | "fill";
   };
+  download?: boolean | string;
 }
 
 /**
@@ -49,11 +50,12 @@ export function useSignedUrl(
         const response = await fetch("/api/studio/assets/signed-url", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            url: storageUrl,
-            transform: options.transform,
-            expiresIn: 3600, // 1 hour
-          }),
+        body: JSON.stringify({
+          url: storageUrl,
+          transform: options.transform,
+          expiresIn: 3600, // 1 hour
+          download: options.download,
+        }),
         });
 
         if (!response.ok) {
