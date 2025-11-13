@@ -4,12 +4,11 @@ import type { Session } from "@supabase/supabase-js";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "./browser";
-import type { Database } from "./types";
 
-interface SupabaseContextValue {
+type SupabaseContextValue = {
   supabase: ReturnType<typeof createSupabaseBrowserClient>;
   session: Session | null;
-}
+};
 
 const SupabaseContext = createContext<SupabaseContextValue | undefined>(
   undefined

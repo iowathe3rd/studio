@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { getModelById, getModelsByGenerationType } from "@/lib/studio/model-mapping";
-import type { FalStudioModel, StudioGenerationType } from "@/lib/ai/studio-models";
+import {
+  getModelById,
+  getModelsByGenerationType,
+} from "@/lib/studio/model-mapping";
+import type { FalStudioModel } from "@/lib/ai/studio-models";
+import type { StudioGenerationType } from "@/lib/studio/types";
 
 /**
  * Unit tests for GenerationPanelV2 and fal.ai integration logic
@@ -13,7 +17,7 @@ test.describe("Generation Panel Logic", () => {
       const model = getModelById("fal-ai/flux-pro/new");
       expect(model).toBeDefined();
 
-      const settings = buildDefaultSettings(model);
+      const settings = buildDefaultSettings(model ?? null);
 
       expect(settings).toBeDefined();
       expect(typeof settings).toBe("object");
@@ -31,7 +35,9 @@ test.describe("Generation Panel Logic", () => {
 
     test("should handle toggle settings correctly", async () => {
       const model = getModelById("fal-ai/flux-pro/new");
-      if (!model) throw new Error("Model not found");
+      if (!model) {
+        throw new Error("Model not found");
+      }
 
       const settings = buildDefaultSettings(model);
 
@@ -46,7 +52,7 @@ test.describe("Generation Panel Logic", () => {
     test("should validate text-to-image without prompt fails", () => {
       const model = getModelById("fal-ai/flux-pro/new");
       const validation = validateGenerationInputs({
-        model,
+        model: model ?? null,
         prompt: "",
         generationType: "text-to-image",
         referenceInputs: {},
@@ -59,7 +65,7 @@ test.describe("Generation Panel Logic", () => {
     test("should validate text-to-image with prompt passes", () => {
       const model = getModelById("fal-ai/flux-pro/new");
       const validation = validateGenerationInputs({
-        model,
+        model: model ?? null,
         prompt: "a beautiful cat",
         generationType: "text-to-image",
         referenceInputs: {},
@@ -81,10 +87,10 @@ test.describe("Generation Panel Logic", () => {
 
     test("should validate prompt length limit", () => {
       const model = getModelById("fal-ai/flux-pro/new");
-      const longPrompt = "a".repeat(10001);
+      const longPrompt = "a".repeat(10_001);
 
       const validation = validateGenerationInputs({
-        model,
+        model: model ?? null,
         prompt: longPrompt,
         generationType: "text-to-image",
         referenceInputs: {},
@@ -162,16 +168,22 @@ test.describe("Generation Panel Logic", () => {
 
     test("should have select settings for image sizes", async () => {
       const model = getModelById("fal-ai/flux-pro/new");
-      const imageSizeSetting = model?.settings?.find((s) => s.key === "image_size");
+      const imageSizeSetting = model?.settings?.find(
+        (s) => s.key === "image_size"
+      );
 
       expect(imageSizeSetting).toBeDefined();
       expect(imageSizeSetting?.type).toBe("select");
-      expect((imageSizeSetting?.options || []).length).toBeGreaterThan(0);
+      if (imageSizeSetting?.type === "select") {
+        expect(imageSizeSetting.options.length).toBeGreaterThan(0);
+      }
     });
 
     test("should have toggle settings", async () => {
       const model = getModelById("fal-ai/flux-pro/new");
-      const toggleSettings = model?.settings?.filter((s) => s.type === "toggle");
+      const toggleSettings = model?.settings?.filter(
+        (s) => s.type === "toggle"
+      );
 
       expect((toggleSettings || []).length).toBeGreaterThan(0);
     });
@@ -318,7 +330,10 @@ test.describe("FAL.AI Generation API", () => {
         aspect_ratio: "16:9",
       };
 
-      const transformed = transformParameters("fal-ai/sora-2/text-to-video", params);
+      const transformed = transformParameters(
+        "fal-ai/sora-2/text-to-video",
+        params
+      );
 
       expect(transformed.output_format).toBe("png");
       expect(transformed.aspect_ratio).toBe("16:9");
@@ -412,8 +427,12 @@ test.describe("FAL.AI Generation API", () => {
  * Helper functions for testing
  */
 
-function buildDefaultSettings(model: FalStudioModel | null): Record<string, any> {
-  if (!model?.settings) return {};
+function buildDefaultSettings(
+  model: FalStudioModel | null
+): Record<string, any> {
+  if (!model?.settings) {
+    return {};
+  }
 
   return model.settings.reduce<Record<string, string | number | boolean>>(
     (acc, setting) => {
@@ -424,16 +443,16 @@ function buildDefaultSettings(model: FalStudioModel | null): Record<string, any>
       }
       return acc;
     },
-    {},
+    {}
   );
 }
 
-interface ValidationInput {
+type ValidationInput = {
   model: FalStudioModel | null;
   prompt: string;
   generationType: StudioGenerationType;
   referenceInputs: Record<string, any>;
-}
+};
 
 function validateGenerationInputs(input: ValidationInput): {
   isValid: boolean;
@@ -447,7 +466,7 @@ function validateGenerationInputs(input: ValidationInput): {
     if (!input.prompt || input.prompt.trim().length === 0) {
       return { isValid: false, error: "Prompt is required" };
     }
-    if (input.prompt.trim().length > 10000) {
+    if (input.prompt.trim().length > 10_000) {
       return { isValid: false, error: "Prompt is too long (max 10000)" };
     }
   }
@@ -479,37 +498,61 @@ function buildFalGenerationInput(request: any): Record<string, any> {
   return input;
 }
 
-function validateFalRequest(request: any): { valid: boolean; errors: string[] } {
+function validateFalRequest(request: any): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   if (!request.modelId) {
     errors.push("Model ID required");
   }
 
-  if (request.generationType.startsWith("text-to")) {
-    if (!request.prompt || request.prompt.trim().length === 0) {
-      errors.push("Prompt required");
-    }
+  if (
+    request.generationType.startsWith("text-to") &&
+    (!request.prompt || request.prompt.trim().length === 0)
+  ) {
+    errors.push("Prompt required");
   }
 
-  if (request.generationType === "image-to-image" && !request.referenceImageUrl) {
+  if (
+    request.generationType === "image-to-image" &&
+    !request.referenceImageUrl
+  ) {
     errors.push("Reference image required");
   }
 
-  if (request.generationType === "image-to-video" && !request.referenceImageUrl) {
+  if (
+    request.generationType === "image-to-video" &&
+    !request.referenceImageUrl
+  ) {
     errors.push("Reference image required");
   }
 
   return { valid: errors.length === 0, errors };
 }
 
-function transformParameters(modelId: string, parameters: Record<string, any>): Record<string, any> {
+function transformParameters(
+  modelId: string,
+  parameters: Record<string, any>
+): Record<string, any> {
   const transformed: Record<string, any> = {};
 
   Object.entries(parameters).forEach(([key, value]) => {
-    if (["num_images", "num_inference_steps", "guidance_scale", "duration"].includes(key) && typeof value === "string") {
-      transformed[key] = parseFloat(value);
-    } else if (["enhance_prompt", "sync_mode", "raw"].includes(key) && typeof value === "string") {
+    if (
+      [
+        "num_images",
+        "num_inference_steps",
+        "guidance_scale",
+        "duration",
+      ].includes(key) &&
+      typeof value === "string"
+    ) {
+      transformed[key] = Number.parseFloat(value);
+    } else if (
+      ["enhance_prompt", "sync_mode", "raw"].includes(key) &&
+      typeof value === "string"
+    ) {
       transformed[key] = value.toLowerCase() === "true";
     } else {
       transformed[key] = value;
@@ -535,7 +578,7 @@ function estimateTime(request: any): number {
   let time = 5000;
 
   if (request.generationType.includes("video")) {
-    time = 30000;
+    time = 30_000;
   }
 
   return time;
