@@ -1,15 +1,15 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getProjectAssetsAction,
+  getProjectGenerationsAction,
+} from "@/lib/studio/actions";
 import type {
   StudioAsset,
   StudioGeneration,
   StudioProject,
 } from "@/lib/studio/types";
-import {
-  getProjectAssetsAction,
-  getProjectGenerationsAction,
-} from "@/lib/studio/actions";
 import { FolderOpen, Sparkles } from "lucide-react";
 import { useCallback, useState } from "react";
 import { AssetGallery } from "./asset-gallery";
