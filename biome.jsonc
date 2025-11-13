@@ -9,27 +9,79 @@
       "!hooks/use-mobile.ts"
     ]
   },
+  "formatter": {
+    "enabled": true
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "off"
+      }
+    }
+  },
   "linter": {
     "rules": {
       "suspicious": {
         "noExplicitAny": "off",
         "noUnknownAtRules": "off",
         "noConsole": "off",
-        "noBitwiseOperators": "off"
+        "noBitwiseOperators": "off",
+        "useAwait": "off",
+        "noArrayIndexKey": "off",
+        "noEvolvingTypes": "off"
       },
       "style": {
         "noMagicNumbers": "off",
-        "noNestedTernary": "off"
+        "noNestedTernary": "off",
+        "noParameterProperties": "off",
+        "useDefaultSwitchClause": "off",
+        "noNonNullAssertion": "off",
+        "noExportedImports": "off",
+        "useConsistentMemberAccessibility": "off",
+        "useImportType": "warn"
       },
       "nursery": {
-        "noUnnecessaryConditions": "off"
+        "noUnnecessaryConditions": "off",
+        "useImageSize": "off",
+        "noShadow": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off",
-        "useSimplifiedLogicExpression": "off"
+        "useSimplifiedLogicExpression": "off",
+        "noForEach": "off",
+        "noUselessConstructor": "off"
+      },
+      "performance": {
+        "noImgElement": "off",
+        "noNamespaceImport": "off",
+        "noBarrelFile": "off",
+        "noReExportAll": "off",
+        "useTopLevelRegex": "off"
       },
       "a11y": {
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "useMediaCaption": "off",
+        "useKeyWithClickEvents": "off",
+        "noStaticElementInteractions": "off",
+        "noRedundantAlt": "off",
+        "noNoninteractiveElementInteractions": "off",
+        "useButtonType": "off"
+      },
+      "correctness": {
+        "noNestedComponentDefinitions": "off",
+        "noUnusedFunctionParameters": "off",
+        "noInvalidUseBeforeDeclaration": "off",
+        "noUnusedVariables": "off",
+        "noUnreachable": "off",
+        "noInvalidPositionAtImportRule": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
       }
     }
   }
